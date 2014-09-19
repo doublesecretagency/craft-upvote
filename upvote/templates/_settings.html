@@ -1,0 +1,30 @@
+{% import '_includes/forms' as forms %}
+
+<h2>Voting Settings</h2>
+
+{{ forms.checkbox({
+	label: "<strong>Require login to vote</strong>"|t,
+	id: 'requireLogin',
+	name: 'requireLogin',
+	checked: settings.requireLogin,
+	errors: settings.getErrors('requireLogin')
+}) }}
+<p>To prevent any chance of voting fraud, it's recommended that your users be logged in to vote. However, sometimes it's necessary to allow anonymous voting.</p>
+
+{{ forms.checkbox({
+	label: "<strong>Allow downvoting</strong>"|t,
+	id: 'allowDownvoting',
+	name: 'allowDownvoting',
+	checked: settings.allowDownvoting,
+	errors: settings.getErrors('allowDownvoting')
+}) }}
+<p>Sometimes it doesn't make sense to give users the option to downvote something. In those cases, downvoting can be disabled.</p>
+
+{{ forms.checkbox({
+	label: "<strong>Allow vote removal</strong>"|t,
+	id: 'allowVoteRemoval',
+	name: 'allowVoteRemoval',
+	checked: settings.allowVoteRemoval,
+	errors: settings.getErrors('allowVoteRemoval')
+}) }}
+<p>Occasionally users will change their mind after voting. This option allows them to "take back" their vote.</p>
