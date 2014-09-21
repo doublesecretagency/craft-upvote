@@ -20,6 +20,11 @@ class Upvote_VoteService extends BaseApplicationComponent
 			} else {
 				return false;
 			}
+		} else {
+			// Update user cookie
+			if (!$this->_updateUserCookie($elementId, $vote)) {
+				return false;
+			}
 		}
 		
 		// Update element score
@@ -75,6 +80,25 @@ class Upvote_VoteService extends BaseApplicationComponent
 		$record->history = $history;
 		// Save
 		return $record->save();
+	}
+
+	// 
+	private function _updateUserCookie($elementId, $vote)
+	{
+		// Get history, add vote
+		$history =& craft()->upvote->anonymousHistory;
+		// Get cookie settings
+		$cookie   = craft()->upvote->userCookie;
+		$lifespan = craft()->upvote->userCookieLifespan;
+		// If not already voted for, cast vote
+		if (!array_key_exists($elementId, $history)) {
+			$history[$elementId] = $vote;
+			craft()->userSession->saveCookie($cookie, $history, $lifespan);
+			return true;
+		} else {
+			return false;
+		}
+
 	}
 
 }

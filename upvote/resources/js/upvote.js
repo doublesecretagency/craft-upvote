@@ -1,3 +1,5 @@
+
+// Load AJAX library
 var ajax = window.superagent;
 
 // Upvote JS object

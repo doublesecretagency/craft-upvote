@@ -11,6 +11,7 @@ class UpvotePlugin extends BasePlugin
 		$this->_loadEnums();
 		// Plugin Settings
 		craft()->upvote->settings = $this->getSettings();
+		craft()->upvote->getAnonymousHistory();
 	}
 
 	public function getName()
@@ -20,7 +21,7 @@ class UpvotePlugin extends BasePlugin
 
 	public function getVersion()
 	{
-		return '0.8.2';
+		return '0.8.3';
 	}
 
 	public function getDeveloper()
