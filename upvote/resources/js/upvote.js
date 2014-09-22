@@ -30,10 +30,14 @@ var upvote = {
 			.end(function (response) {
 				var success = JSON.parse(response.text);
 				console.log(success);
-				// If successful, change score in DOM
+				// If successful
 				if (success) {
-					var el = document.getElementById('upvote-score-'+id);
-					el.textContent = parseInt(el.textContent) + parseInt(success.vote);
+					// Change score in DOM
+					var score = document.getElementById('upvote-score-'+id);
+					score.textContent = parseInt(score.textContent) + parseInt(success.vote);
+					// Mark voting icon
+					var icon = document.getElementById('upvote-'+vote+'-'+id);
+					icon.className += ' upvote-vote-match';
 				}
 			})
 		;

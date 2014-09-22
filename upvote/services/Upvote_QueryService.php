@@ -11,4 +11,17 @@ class Upvote_QueryService extends BaseApplicationComponent
 		return ($record ? $record->score : 0);
 	}
 
+	// 
+	public function userHistory()
+	{
+		$user = craft()->userSession->getUser();
+		if ($user) {
+			$record = Upvote_UserHistoryRecord::model()->findByPK($user->id);
+			if ($record) {
+				return $record->history;
+			}
+		}
+		return array();
+	}
+
 }

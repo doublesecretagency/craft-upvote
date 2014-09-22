@@ -15,6 +15,56 @@ class UpvoteVariable
 	}
 
 	// 
+	public function iconUpvote($elementId, $domElement)
+	{
+		return $this->_renderIcon($elementId, $domElement, Vote::Upvote);
+	}
+
+	// 
+	public function iconDownvote($elementId, $domElement)
+	{
+		if (craft()->upvote->settings['allowDownvoting']) {
+			return $this->_renderIcon($elementId, $domElement, Vote::Downvote);
+		} else {
+			$link = UrlHelper::getCpUrl().'/settings/plugins/upvote';
+			$message = 'Downvoting is disabled <a href="'.$link.'" target="_blank">(view settings)</a>';
+			return TemplateHelper::getRaw($message);
+		}
+	}
+
+	// 
+	public function _renderIcon($elementId, $domElement, $vote)
+	{
+		// Establish basics
+		$class = 'upvote-vote';
+		switch ($vote) {
+			case Vote::Upvote:
+				$id = 'upvote-upvote-'.$elementId;
+				$js = $this->jsUpvote($elementId);
+				$class .= ' upvote-upvote';
+				break;
+			case Vote::Downvote:
+				$id = 'upvote-downvote-'.$elementId;
+				$js = $this->jsDownvote($elementId);
+				$class .= ' upvote-downvote';
+				break;
+		}
+		// Get user vote history
+		if (craft()->upvote->settings['requireLogin']) {
+			$history = craft()->upvote_query->userHistory();
+		} else {
+			$history = craft()->upvote->anonymousHistory;
+		}
+		// If user already voted in this direction, mark as a match
+		if (array_key_exists($elementId, $history) && ($history[$elementId] == $vote)) {
+			$class .= ' upvote-vote-match';
+		}
+		// Compile DOM element
+		$span = '<span onclick="'.$js.'" id="'.$id.'" class="'.$class.'">'.$domElement.'</span>';
+		return TemplateHelper::getRaw($span);
+	}
+
+	// 
 	public function jsUpvote($elementId, $prefix = false)
 	{
 		$this->_includeJs();
@@ -27,6 +77,8 @@ class UpvoteVariable
 		if (craft()->upvote->settings['allowDownvoting']) {
 			$this->_includeJs();
 			return ($prefix?'javascript:':'').'upvote.downvote('.$elementId.')';
+		} else {
+			return '';
 		}
 	}
 
@@ -48,19 +100,5 @@ window.csrfTokenValue = "'.craft()->request->getCsrfToken().'";
 			}
 		}
 	}
-
-	/*
-	// 
-	public function upvoteIcon($elementId)
-	{
-		return '';
-	}
-
-	// 
-	public function downvoteIcon($elementId)
-	{
-		return '';
-	}
-	*/
 
 }
