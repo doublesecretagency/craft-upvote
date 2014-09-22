@@ -5,36 +5,48 @@ class UpvoteVariable
 {
 
 	// 
-	public function test($elementId, $vote)
+	public function score($elementId)
 	{
-		return craft()->upvote_vote->castVote($elementId, $vote);
-	}
-
-
-
-
-
-	// 
-	public function jsUpvote($elementId)
-	{
-		$this->_includeJs();
-		return 'upvote.upvote('.$elementId.')';
+		$id    = 'upvote-score-'.$elementId;
+		$class = 'upvote-score';
+		$score = craft()->upvote_query->score($elementId);
+		$span  = '<span id="'.$id.'" class="'.$class.'">'.$score.'</span>';
+		return TemplateHelper::getRaw($span);
 	}
 
 	// 
-	public function jsDownvote($elementId)
+	public function jsUpvote($elementId, $prefix = false)
 	{
 		$this->_includeJs();
-		return 'upvote.downvote('.$elementId.')';
+		return ($prefix?'javascript:':'').'upvote.upvote('.$elementId.')';
+	}
+
+	// 
+	public function jsDownvote($elementId, $prefix = false)
+	{
+		if (craft()->upvote->settings['allowDownvoting']) {
+			$this->_includeJs();
+			return ($prefix?'javascript:':'').'upvote.downvote('.$elementId.')';
+		}
 	}
 
 	// 
 	private function _includeJs()
 	{
-		//$csrf = '// JS CSRF';
-        //craft()->templates->includeJs($csrf, true);
         craft()->templates->includeJsResource('upvote/js/superagent.js');
         craft()->templates->includeJsResource('upvote/js/upvote.js');
+
+        // CSRF
+		if (craft()->config->get('enableCsrfProtection') === true) {
+			if (!craft()->upvote->csrfIncluded) {
+				$csrf = '
+window.csrfTokenName = "'.craft()->config->get('csrfTokenName').'";
+window.csrfTokenValue = "'.craft()->request->getCsrfToken().'";
+';
+				craft()->templates->includeJs($csrf);
+				craft()->upvote->csrfIncluded = true;
+			}
+		}
 	}
 
 	/*

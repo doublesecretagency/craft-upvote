@@ -10,6 +10,8 @@ class UpvoteService extends BaseApplicationComponent
 	public $userCookieLifespan = 315569260; // Lasts 10 years
 	public $anonymousHistory;
 
+	public $csrfIncluded = false;
+
 	public function getAnonymousHistory()
 	{
 		$this->anonymousHistory = craft()->userSession->getStateCookieValue($this->userCookie);

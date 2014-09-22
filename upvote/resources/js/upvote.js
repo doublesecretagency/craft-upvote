@@ -28,7 +28,13 @@ var upvote = {
 			.type('form')
 			.set('X-Requested-With','XMLHttpRequest')
 			.end(function (response) {
-				console.log(JSON.parse(response.text));
+				var success = JSON.parse(response.text);
+				console.log(success);
+				// If successful, change score in DOM
+				if (success) {
+					var el = document.getElementById('upvote-score-'+id);
+					el.textContent = parseInt(el.textContent) + parseInt(success.vote);
+				}
 			})
 		;
 	}

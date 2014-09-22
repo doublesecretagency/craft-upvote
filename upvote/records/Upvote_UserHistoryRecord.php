@@ -18,7 +18,7 @@ class Upvote_UserHistoryRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'user' => array(static::BELONGS_TO, 'UserRecord', 'required' => true, 'onDelete' => static::CASCADE),
+			'user' => array(static::BELONGS_TO, 'UserRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
 		);
 	}
 

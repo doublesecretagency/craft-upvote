@@ -10,19 +10,13 @@ class Upvote_VoteService extends BaseApplicationComponent
 
 		// If login is required
 		if (craft()->upvote->settings['requireLogin']) {
-			$user = craft()->userSession->getUser();
-			// If user is logged in
-			if ($user) {
-				// Update user history
-				if (!$this->_updateUserHistory($user->id, $elementId, $vote)) {
-					return false;
-				}
-			} else {
+			// Update user history
+			if (!$this->_updateUserHistoryDatabase($elementId, $vote)) {
 				return false;
 			}
 		} else {
 			// Update user cookie
-			if (!$this->_updateUserCookie($elementId, $vote)) {
+			if (!$this->_updateUserHistoryCookie($elementId, $vote)) {
 				return false;
 			}
 		}
@@ -31,9 +25,36 @@ class Upvote_VoteService extends BaseApplicationComponent
 		$this->_updateElementScore($elementId, $vote);
 
 		return array(
-			'elementId' => $elementId,
+			'id'   => $elementId,
 			'vote' => $vote,
 		);
+
+	}
+
+	// 
+	public function withdrawVote($elementId)
+	{
+
+		// Remove from cookie history
+		unset(craft()->upvote->anonymousHistory[$elementId]);
+		$this->_saveUserHistoryCookie();
+
+		$user = craft()->userSession->getUser();
+		// If user is not logged in, return false
+		if ($user) {
+			// Load existing element history
+			$record = Upvote_UserHistoryRecord::model()->findByPK($user->id);
+			// If history exists, remove vote
+			if ($record) {
+
+				// Remove from db history
+
+				$record->save();
+			}
+		}
+
+
+		// Subtract original vote from element total
 
 	}
 
@@ -41,13 +62,11 @@ class Upvote_VoteService extends BaseApplicationComponent
 	private function _updateElementScore($elementId, $vote)
 	{
 		// Load existing element score
-		$record = Upvote_ElementScoreRecord::model()->findByAttributes(array(
-			'elementId' => $elementId,
-		));
+		$record = Upvote_ElementScoreRecord::model()->findByPK($elementId);
 		// If no score exists, create new
 		if (!$record) {
 			$record = new Upvote_ElementScoreRecord;
-			$record->elementId = $elementId;
+			$record->id = $elementId;
 			$record->score = 0;
 		}
 		// Register vote
@@ -57,16 +76,19 @@ class Upvote_VoteService extends BaseApplicationComponent
 	}
 
 	// 
-	private function _updateUserHistory($userId, $elementId, $vote)
+	private function _updateUserHistoryDatabase($elementId, $vote)
 	{
+		$user = craft()->userSession->getUser();
+		// If user is not logged in, return false
+		if (!$user) {
+			return false;
+		}
 		// Load existing element history
-		$record = Upvote_UserHistoryRecord::model()->findByAttributes(array(
-			'userId' => $userId,
-		));
+		$record = Upvote_UserHistoryRecord::model()->findByPK($user->id);
 		// If no history exists, create new
 		if (!$record) {
 			$record = new Upvote_UserHistoryRecord;
-			$record->userId = $userId;
+			$record->id = $user->id;
 			$history = array();
 		// Else if user already voted on element, return false
 		} else if (array_key_exists($elementId, $record->history)) {
@@ -83,22 +105,27 @@ class Upvote_VoteService extends BaseApplicationComponent
 	}
 
 	// 
-	private function _updateUserCookie($elementId, $vote)
+	private function _updateUserHistoryCookie($elementId, $vote)
 	{
-		// Get history, add vote
 		$history =& craft()->upvote->anonymousHistory;
-		// Get cookie settings
-		$cookie   = craft()->upvote->userCookie;
-		$lifespan = craft()->upvote->userCookieLifespan;
 		// If not already voted for, cast vote
 		if (!array_key_exists($elementId, $history)) {
 			$history[$elementId] = $vote;
-			craft()->userSession->saveCookie($cookie, $history, $lifespan);
+			$this->_saveUserHistoryCookie();
 			return true;
 		} else {
 			return false;
 		}
 
+	}
+
+	// 
+	private function _saveUserHistoryCookie()
+	{
+		$cookie   = craft()->upvote->userCookie;
+		$history  = craft()->upvote->anonymousHistory;
+		$lifespan = craft()->upvote->userCookieLifespan;
+		craft()->userSession->saveCookie($cookie, $history, $lifespan);
 	}
 
 }

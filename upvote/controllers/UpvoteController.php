@@ -14,7 +14,11 @@ class UpvoteController extends BaseController
 	// Downvote specified element
 	public function actionDownvote()
 	{
-		return $this->_castVote(Vote::Downvote);
+		if (craft()->upvote->settings['allowDownvoting']) {
+			return $this->_castVote(Vote::Downvote);
+		} else {
+			$this->returnJson(false);
+		}
 	}
 
 	// Vote on specified element
@@ -23,6 +27,17 @@ class UpvoteController extends BaseController
 		$this->requireAjaxRequest();
 		$elementId = craft()->request->getPost('id');
 		$response = craft()->upvote_vote->castVote($elementId, $vote);
+		$this->returnJson($response);
+	}
+
+	// ================================================================= //
+
+	// Withdraw vote from specified element
+	public function actionWithdrawVote()
+	{
+		$this->requireAjaxRequest();
+		$elementId = craft()->request->getPost('id');
+		$response = craft()->upvote_vote->withdrawVote($elementId);
 		$this->returnJson($response);
 	}
 

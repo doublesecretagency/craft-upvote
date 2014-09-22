@@ -18,7 +18,7 @@ class Upvote_ElementScoreRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'element' => array(static::BELONGS_TO, 'ElementRecord', 'required' => true, 'onDelete' => static::CASCADE),
+			'element' => array(static::BELONGS_TO, 'ElementRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
 		);
 	}
 
