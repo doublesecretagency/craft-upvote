@@ -26,8 +26,9 @@ class UpvoteVariable
 		if (craft()->upvote->settings['allowDownvoting']) {
 			return $this->_renderIcon($elementId, $domElement, Vote::Downvote);
 		} else {
-			$link = UrlHelper::getCpUrl().'/settings/plugins/upvote';
-			$message = 'Downvoting is disabled <a href="'.$link.'" target="_blank">(view settings)</a>';
+			//$link = UrlHelper::getCpUrl().'/settings/plugins/upvote';
+			//$message = 'Downvoting is disabled <a href="'.$link.'" target="_blank">(view settings)</a>';
+			$message = 'Downvoting is disabled';
 			return TemplateHelper::getRaw($message);
 		}
 	}
@@ -85,10 +86,13 @@ class UpvoteVariable
 	// 
 	private function _includeJs()
 	{
-        craft()->templates->includeJsResource('upvote/js/superagent.js');
-        craft()->templates->includeJsResource('upvote/js/upvote.js');
+		craft()->templates->includeJsResource('upvote/js/superagent.js');
+		craft()->templates->includeJsResource('upvote/js/upvote.js');
+		if (craft()->upvote->settings['allowVoteRemoval']) {
+			craft()->templates->includeJsResource('upvote/js/unvote.js');
+		}
 
-        // CSRF
+		// CSRF
 		if (craft()->config->get('enableCsrfProtection') === true) {
 			if (!craft()->upvote->csrfIncluded) {
 				$csrf = '

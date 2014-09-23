@@ -32,33 +32,6 @@ class Upvote_VoteService extends BaseApplicationComponent
 	}
 
 	// 
-	public function withdrawVote($elementId)
-	{
-
-		// Remove from cookie history
-		unset(craft()->upvote->anonymousHistory[$elementId]);
-		$this->_saveUserHistoryCookie();
-
-		$user = craft()->userSession->getUser();
-		// If user is not logged in, return false
-		if ($user) {
-			// Load existing element history
-			$record = Upvote_UserHistoryRecord::model()->findByPK($user->id);
-			// If history exists, remove vote
-			if ($record) {
-
-				// Remove from db history
-
-				$record->save();
-			}
-		}
-
-
-		// Subtract original vote from element total
-
-	}
-
-	// 
 	private function _updateElementScore($elementId, $vote)
 	{
 		// Load existing element score
@@ -126,6 +99,60 @@ class Upvote_VoteService extends BaseApplicationComponent
 		$history  = craft()->upvote->anonymousHistory;
 		$lifespan = craft()->upvote->userCookieLifespan;
 		craft()->userSession->saveCookie($cookie, $history, $lifespan);
+	}
+
+	// 
+	public function removeVote($elementId)
+	{
+		$originalVote = false;
+
+		$this->_removeVoteFromCookie($elementId, $originalVote);
+		$this->_removeVoteFromDb($elementId, $originalVote);
+
+		if ($originalVote) {
+			$antivote = (-1 * $originalVote);
+			$this->_updateElementScore($elementId, $antivote);
+			return array(
+				'id'       => $elementId,
+				'antivote' => $antivote,
+			);
+		} else {
+			return false;
+		}
+
+	}
+
+	// 
+	private function _removeVoteFromCookie($elementId, &$originalVote)
+	{
+		// Remove from cookie history
+		$historyCookie =& craft()->upvote->anonymousHistory;
+		if (array_key_exists($elementId, $historyCookie)) {
+			$originalVote = $historyCookie[$elementId];
+			unset($historyCookie[$elementId]);
+			$this->_saveUserHistoryCookie();
+		}
+	}
+
+	// 
+	private function _removeVoteFromDb($elementId, &$originalVote)
+	{
+		$user = craft()->userSession->getUser();
+		if ($user) {
+			$record = Upvote_UserHistoryRecord::model()->findByPK($user->id);
+			if ($record) {
+				// Remove from database history
+				$historyDb = $record->history;
+				if (array_key_exists($elementId, $historyDb)) {
+					if (!$originalVote) {
+						$originalVote = $historyDb[$elementId];
+					}
+					unset($historyDb[$elementId]);
+					$record->history = $historyDb;
+					$record->save();
+				}
+			}
+		}
 	}
 
 }

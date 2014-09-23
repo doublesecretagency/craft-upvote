@@ -33,11 +33,11 @@ class UpvoteController extends BaseController
 	// ================================================================= //
 
 	// Withdraw vote from specified element
-	public function actionWithdrawVote()
+	public function actionRemove()
 	{
 		$this->requireAjaxRequest();
 		$elementId = craft()->request->getPost('id');
-		$response = craft()->upvote_vote->withdrawVote($elementId);
+		$response = craft()->upvote_vote->removeVote($elementId);
 		$this->returnJson($response);
 	}
 
