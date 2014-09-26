@@ -105,4 +105,10 @@ window.csrfTokenValue = "'.craft()->request->getCsrfToken().'";
 		}
 	}
 
+	// 
+	public function sort($entries)
+	{
+		return craft()->upvote_query->sort($entries);
+	}
+
 }

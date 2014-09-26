@@ -22,4 +22,14 @@ class Upvote_ElementScoreRecord extends BaseRecord
 		);
 	}
 
+	/**
+	 * @return array
+	 */
+	public function scopes()
+	{
+		return array(
+			'ordered' => array('order' => 'score DESC, id ASC'),
+		);
+	}
+
 }
