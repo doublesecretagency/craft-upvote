@@ -16,7 +16,7 @@ var upvote = {
 	},
 	// Remove vote
 	removeVote: function () {
-		console.log('The ability to retract votes has been disabled.');
+		console.log('Vote retraction is disabled.');
 	},
 	// Cast vote
 	_vote: function (elementId, vote) {
@@ -35,11 +35,12 @@ var upvote = {
 				.type('form')
 				.set('X-Requested-With','XMLHttpRequest')
 				.end(function (response) {
-					var success = JSON.parse(response.text);
-					console.log(success);
-					// If successful
-					if (success) {
-						upvote._updateScore(elementId, success.vote);
+					var results = JSON.parse(response.text);
+					console.log(results);
+					var errorReturned = (typeof results == 'string' || results instanceof String);
+					// If no error message was returned
+					if (!errorReturned) {
+						upvote._updateScore(elementId, results.vote);
 						icon.className += ' upvote-vote-match';
 					}
 				})

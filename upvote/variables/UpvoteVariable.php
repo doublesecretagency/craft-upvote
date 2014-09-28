@@ -23,14 +23,7 @@ class UpvoteVariable
 	// 
 	public function downvoteIcon($elementId, $domElement)
 	{
-		if (craft()->upvote->settings['allowDownvoting']) {
-			return $this->_renderIcon($elementId, $domElement, Vote::Downvote);
-		} else {
-			//$link = UrlHelper::getCpUrl().'/settings/plugins/upvote';
-			//$message = 'Downvoting is disabled <a href="'.$link.'" target="_blank">(view settings)</a>';
-			$message = 'Downvoting is disabled';
-			return TemplateHelper::getRaw($message);
-		}
+		return $this->_renderIcon($elementId, $domElement, Vote::Downvote);
 	}
 
 	// 
@@ -75,12 +68,8 @@ class UpvoteVariable
 	// 
 	public function jsDownvote($elementId, $prefix = false)
 	{
-		if (craft()->upvote->settings['allowDownvoting']) {
-			$this->_includeJs();
-			return ($prefix?'javascript:':'').'upvote.downvote('.$elementId.')';
-		} else {
-			return '';
-		}
+		$this->_includeJs();
+		return ($prefix?'javascript:':'')."upvote.downvote($elementId)";
 	}
 
 	// 

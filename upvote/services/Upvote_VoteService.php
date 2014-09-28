@@ -8,16 +8,18 @@ class Upvote_VoteService extends BaseApplicationComponent
 	public function castVote($elementId, $vote)
 	{
 
+		$alreadyVoted = 'You have already voted on this element.';
+
 		// If login is required
 		if (craft()->upvote->settings['requireLogin']) {
 			// Update user history
 			if (!$this->_updateUserHistoryDatabase($elementId, $vote)) {
-				return false;
+				return $alreadyVoted;
 			}
 		} else {
 			// Update user cookie
 			if (!$this->_updateUserHistoryCookie($elementId, $vote)) {
-				return false;
+				return $alreadyVoted;
 			}
 		}
 		
@@ -117,7 +119,7 @@ class Upvote_VoteService extends BaseApplicationComponent
 				'antivote' => $antivote,
 			);
 		} else {
-			return false;
+			return 'Unable to remove vote.';
 		}
 
 	}
