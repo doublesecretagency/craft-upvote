@@ -25,29 +25,12 @@ class Upvote_QueryService extends BaseApplicationComponent
 	}
 
 
-
-	public function sort(ElementCriteriaModel $criteria) {
-
-		$elementIds = $this->_elementIdsByScore();
-
-		// Filter only elements with matching ids
-		$criteria->setAttribute('id', $elementIds);
-
-		// Sort results by ordered element ids
-		$criteria->setAttribute('order', 'FIELD(elements.id, '.join(', ', $elementIds).')');
-
-		return $criteria;
-	}
-
-	private function _elementIdsByScore() {
-		$scores = Upvote_ElementScoreRecord::model()->ordered()->findAll();
-
-		$elementIds = array();
-		foreach ($scores as $score) {
-			$elementIds[] = $score->id;
-		}
-
-		return $elementIds;
+	// 
+	public function orderElementsByScore(ElementCriteriaModel $criteria) {
+		$query = craft()->elements->buildElementsQuery($criteria);
+		$query->join('upvote_elementscores upvote_elementscores', 'upvote_elementscores.id = elements.id');
+		$query->order('upvote_elementscores.score DESC, upvote_elementscores.id ASC');
+		return $query->queryAll();
 	}
 
 }

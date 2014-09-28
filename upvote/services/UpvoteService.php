@@ -21,4 +21,15 @@ class UpvoteService extends BaseApplicationComponent
 		}
 	}
 
+	// 
+	public function initElementScore($element, $new)
+	{
+		if ($new) {
+			$record = new Upvote_ElementScoreRecord;
+			$record->id = $element->id;
+			$record->score = 0;
+			$record->save();
+		}
+	}
+
 }

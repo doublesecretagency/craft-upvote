@@ -12,6 +12,22 @@ class UpvotePlugin extends BasePlugin
 		// Plugin Settings
 		craft()->upvote->settings = $this->getSettings();
 		craft()->upvote->getAnonymousHistory();
+		// Events
+		craft()->on('assets.saveAsset', function(Event $event) {
+			craft()->upvote->initElementScore($event->params['asset'], true);
+		});
+		craft()->on('categories.saveCategory', function(Event $event) {
+			craft()->upvote->initElementScore($event->params['category'], $event->params['isNewCategory']);
+		});
+		craft()->on('entries.saveEntry', function(Event $event) {
+			craft()->upvote->initElementScore($event->params['entry'], $event->params['isNewEntry']);
+		});
+		craft()->on('tags.saveTag', function(Event $event) {
+			craft()->upvote->initElementScore($event->params['tag'], $event->params['isNewTag']);
+		});
+		craft()->on('users.saveUser', function(Event $event) {
+			craft()->upvote->initElementScore($event->params['user'], $event->params['isNewUser']);
+		});
 	}
 
 	public function getName()
@@ -21,7 +37,7 @@ class UpvotePlugin extends BasePlugin
 
 	public function getVersion()
 	{
-		return '0.9.0';
+		return '0.9.2';
 	}
 
 	public function getDeveloper()

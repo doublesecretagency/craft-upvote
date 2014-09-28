@@ -15,13 +15,13 @@ class UpvoteVariable
 	}
 
 	// 
-	public function iconUpvote($elementId, $domElement)
+	public function upvoteIcon($elementId, $domElement)
 	{
 		return $this->_renderIcon($elementId, $domElement, Vote::Upvote);
 	}
 
 	// 
-	public function iconDownvote($elementId, $domElement)
+	public function downvoteIcon($elementId, $domElement)
 	{
 		if (craft()->upvote->settings['allowDownvoting']) {
 			return $this->_renderIcon($elementId, $domElement, Vote::Downvote);
@@ -106,9 +106,9 @@ window.csrfTokenValue = "'.craft()->request->getCsrfToken().'";
 	}
 
 	// 
-	public function sort($entries)
+	public function orderElementsByScore($entries)
 	{
-		return craft()->upvote_query->sort($entries);
+		return craft()->upvote_query->orderElementsByScore($entries);
 	}
 
 }
