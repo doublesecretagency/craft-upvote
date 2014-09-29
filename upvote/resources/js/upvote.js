@@ -53,6 +53,8 @@ var upvote = {
 	// Update score
 	_updateScore: function (elementId, vote) {
 		var score = document.getElementById('upvote-score-'+elementId);
-		score.textContent = parseInt(score.textContent) + parseInt(vote);
+		if (score) {
+			score.textContent = parseInt(score.textContent) + parseInt(vote);
+		}
 	}
 }
