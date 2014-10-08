@@ -20,7 +20,7 @@ upvote.removeVote = function (elementId) {
 			var errorReturned = (typeof results == 'string' || results instanceof String);
 			// If no error message was returned
 			if (!errorReturned) {
-				upvote._updateScore(elementId, results.antivote);
+				upvote._updateTally(elementId, results.antivote);
 				upvote._removeVoteClass(elementId, 'upvote');
 				upvote._removeVoteClass(elementId, 'downvote');
 			}

@@ -1,17 +1,17 @@
 <?php
 namespace Craft;
 
-class Upvote_ElementScoreRecord extends BaseRecord
+class Upvote_ElementTallyRecord extends BaseRecord
 {
 	public function getTableName()
 	{
-		return 'upvote_elementscores';
+		return 'upvote_elementtallies';
 	}
 
 	protected function defineAttributes()
 	{
 		return array(
-			'score' => AttributeType::Number,
+			'tally' => AttributeType::Number,
 		);
 	}
 

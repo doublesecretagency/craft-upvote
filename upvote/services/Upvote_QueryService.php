@@ -5,10 +5,10 @@ class Upvote_QueryService extends BaseApplicationComponent
 {
 
 	// 
-	public function score($elementId)
+	public function tally($elementId)
 	{
-		$record = Upvote_ElementScoreRecord::model()->findByPK($elementId);
-		return ($record ? $record->score : 0);
+		$record = Upvote_ElementTallyRecord::model()->findByPK($elementId);
+		return ($record ? $record->tally : 0);
 	}
 
 	// 
@@ -27,30 +27,30 @@ class Upvote_QueryService extends BaseApplicationComponent
 
 	/*
 	// 
-	public function orderElementsByScore(ElementCriteriaModel $criteria) {
+	public function orderByTally(ElementCriteriaModel $criteria) {
 		$query = craft()->elements->buildElementsQuery($criteria);
-		$query->join('upvote_elementscores upvote_elementscores', 'upvote_elementscores.id = elements.id');
-		$query->order('upvote_elementscores.score DESC, upvote_elementscores.id ASC');
+		$query->join('upvote_elementtallies upvote_elementtallies', 'upvote_elementtallies.id = elements.id');
+		$query->order('upvote_elementtallies.tally DESC, upvote_elementtallies.id ASC');
 		return $query->queryAll();
 	}
 	*/
 
 	//
-	public function orderElementsByScore(ElementCriteriaModel $criteria) {
-		$elementIds = $this->_elementIdsByScore();
+	public function orderByTally(ElementCriteriaModel $criteria) {
+		$elementIds = $this->_elementIdsByTally();
 		$criteria->setAttribute('id', $elementIds);
 		$criteria->setAttribute('order', 'FIELD(elements.id, '.join(', ', $elementIds).')');
 		return $criteria;
 	}
 
 	//
-	private function _elementIdsByScore() {
-		$scores = Upvote_ElementScoreRecord::model()->findAll(array(
-			'order' => 'score DESC, id ASC'
+	private function _elementIdsByTally() {
+		$ranking = Upvote_ElementTallyRecord::model()->findAll(array(
+			'order' => 'tally DESC, id ASC'
 		));
 		$elementIds = array();
-		foreach ($scores as $score) {
-			$elementIds[] = $score->id;
+		foreach ($ranking as $element) {
+			$elementIds[] = $element->id;
 		}
 		return $elementIds;
 	}

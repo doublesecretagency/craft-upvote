@@ -5,12 +5,12 @@ class UpvoteVariable
 {
 
 	// 
-	public function score($elementId)
+	public function tally($elementId)
 	{
-		$id    = 'upvote-score-'.$elementId;
-		$class = 'upvote-score';
-		$score = craft()->upvote_query->score($elementId);
-		$span  = '<span id="'.$id.'" class="'.$class.'">'.$score.'</span>';
+		$id    = 'upvote-tally-'.$elementId;
+		$class = 'upvote-tally';
+		$tally = craft()->upvote_query->tally($elementId);
+		$span  = '<span id="'.$id.'" class="'.$class.'">'.$tally.'</span>';
 		return TemplateHelper::getRaw($span);
 	}
 
@@ -95,9 +95,9 @@ window.csrfTokenValue = "'.craft()->request->getCsrfToken().'";
 	}
 
 	// 
-	public function orderElementsByScore($entries)
+	public function orderByTally($entries)
 	{
-		return craft()->upvote_query->orderElementsByScore($entries);
+		return craft()->upvote_query->orderByTally($entries);
 	}
 
 }

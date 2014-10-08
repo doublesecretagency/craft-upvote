@@ -40,7 +40,7 @@ var upvote = {
 					var errorReturned = (typeof results == 'string' || results instanceof String);
 					// If no error message was returned
 					if (!errorReturned) {
-						upvote._updateScore(elementId, results.vote);
+						upvote._updateTally(elementId, results.vote);
 						icon.className += ' upvote-vote-match';
 					}
 				})
@@ -50,11 +50,11 @@ var upvote = {
 			this.removeVote(elementId);
 		}
 	},
-	// Update score
-	_updateScore: function (elementId, vote) {
-		var score = document.getElementById('upvote-score-'+elementId);
-		if (score) {
-			score.textContent = parseInt(score.textContent) + parseInt(vote);
+	// Update tally
+	_updateTally: function (elementId, vote) {
+		var tally = document.getElementById('upvote-tally-'+elementId);
+		if (tally) {
+			tally.textContent = parseInt(tally.textContent) + parseInt(vote);
 		}
 	}
 }

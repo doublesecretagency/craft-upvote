@@ -23,8 +23,8 @@ class Upvote_VoteService extends BaseApplicationComponent
 			}
 		}
 		
-		// Update element score
-		$this->_updateElementScore($elementId, $vote);
+		// Update element tally
+		$this->_updateElementTally($elementId, $vote);
 
 		return array(
 			'id'   => $elementId,
@@ -34,18 +34,18 @@ class Upvote_VoteService extends BaseApplicationComponent
 	}
 
 	// 
-	private function _updateElementScore($elementId, $vote)
+	private function _updateElementTally($elementId, $vote)
 	{
-		// Load existing element score
-		$record = Upvote_ElementScoreRecord::model()->findByPK($elementId);
-		// If no score exists, create new
+		// Load existing element tally
+		$record = Upvote_ElementTallyRecord::model()->findByPK($elementId);
+		// If no tally exists, create new
 		if (!$record) {
-			$record = new Upvote_ElementScoreRecord;
+			$record = new Upvote_ElementTallyRecord;
 			$record->id = $elementId;
-			$record->score = 0;
+			$record->tally = 0;
 		}
 		// Register vote
-		$record->score += $vote;
+		$record->tally += $vote;
 		// Save
 		return $record->save();
 	}
@@ -113,7 +113,7 @@ class Upvote_VoteService extends BaseApplicationComponent
 
 		if ($originalVote) {
 			$antivote = (-1 * $originalVote);
-			$this->_updateElementScore($elementId, $antivote);
+			$this->_updateElementTally($elementId, $antivote);
 			return array(
 				'id'       => $elementId,
 				'antivote' => $antivote,
