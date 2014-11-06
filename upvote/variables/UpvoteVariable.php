@@ -27,7 +27,7 @@ class UpvoteVariable
 	}
 
 	// 
-	public function _renderIcon($elementId, $domElement, $vote)
+	private function _renderIcon($elementId, $domElement, $vote)
 	{
 		// Establish basics
 		$class = 'upvote-vote';
@@ -95,7 +95,7 @@ window.csrfTokenValue = "'.craft()->request->getCsrfToken().'";
 	}
 
 	// 
-	public function orderByTally($entries)
+	public function orderByTally(ElementCriteriaModel $entries)
 	{
 		return craft()->upvote_query->orderByTally($entries);
 	}

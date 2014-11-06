@@ -22,12 +22,12 @@ class UpvoteService extends BaseApplicationComponent
 	}
 
 	// 
-	public function initElementScore($element, $new)
+	public function initElementTally($element, $new = true)
 	{
 		if ($new) {
-			$record = new Upvote_ElementScoreRecord;
+			$record = new Upvote_ElementTallyRecord;
 			$record->id = $element->id;
-			$record->score = 0;
+			$record->tally = 0;
 			$record->save();
 		}
 	}
