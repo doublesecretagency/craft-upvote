@@ -95,7 +95,7 @@ window.csrfTokenValue = "'.craft()->request->getCsrfToken().'";
 	}
 
 	// 
-	public function orderByTally(ElementCriteriaModel $entries)
+	public function mostPopular(ElementCriteriaModel $entries)
 	{
 		return craft()->upvote_query->orderByTally($entries);
 	}

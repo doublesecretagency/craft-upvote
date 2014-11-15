@@ -13,20 +13,27 @@ class UpvotePlugin extends BasePlugin
 		craft()->upvote->settings = $this->getSettings();
 		craft()->upvote->getAnonymousHistory();
 		// Events
+		// NEW (Craft v2.3)
+		/*
+		craft()->on('elements.saveElement', function(Event $event) {
+			craft()->upvote->initElementTally($event->params['element']->id, $event->params['isNewElement']);
+		});
+		*/
+		// ORIGNAL
 		craft()->on('assets.saveAsset', function(Event $event) {
-			craft()->upvote->initElementTally($event->params['asset']);
+			craft()->upvote->initElementTally($event->params['asset']->id);
 		});
 		craft()->on('categories.saveCategory', function(Event $event) {
-			craft()->upvote->initElementTally($event->params['category'], $event->params['isNewCategory']);
+			craft()->upvote->initElementTally($event->params['category']->id, $event->params['isNewCategory']);
 		});
 		craft()->on('entries.saveEntry', function(Event $event) {
-			craft()->upvote->initElementTally($event->params['entry'], $event->params['isNewEntry']);
+			craft()->upvote->initElementTally($event->params['entry']->id, $event->params['isNewEntry']);
 		});
 		craft()->on('tags.saveTag', function(Event $event) {
-			craft()->upvote->initElementTally($event->params['tag'], $event->params['isNewTag']);
+			craft()->upvote->initElementTally($event->params['tag']->id, $event->params['isNewTag']);
 		});
 		craft()->on('users.saveUser', function(Event $event) {
-			craft()->upvote->initElementTally($event->params['user'], $event->params['isNewUser']);
+			craft()->upvote->initElementTally($event->params['user']->id, $event->params['isNewUser']);
 		});
 	}
 
@@ -37,7 +44,7 @@ class UpvotePlugin extends BasePlugin
 
 	public function getVersion()
 	{
-		return '0.9.7';
+		return '0.9.8';
 	}
 
 	public function getDeveloper()
@@ -74,11 +81,7 @@ class UpvotePlugin extends BasePlugin
 
     public function onAfterInstall()
     {
-		
-		// Initialize tally for every existing element
-
-        // @TODO: Change to "Introduction" page
-        craft()->request->redirect(UrlHelper::getCpUrl('adwizard/thanks'));
+		craft()->upvote->initAllElementTallies();
     }
 	
 }
