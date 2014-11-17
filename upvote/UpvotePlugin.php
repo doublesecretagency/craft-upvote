@@ -44,7 +44,7 @@ class UpvotePlugin extends BasePlugin
 
 	public function getVersion()
 	{
-		return '0.9.8';
+		return '0.9.9';
 	}
 
 	public function getDeveloper()
@@ -54,7 +54,7 @@ class UpvotePlugin extends BasePlugin
 
 	public function getDeveloperUrl()
 	{
-		return 'https://github.com/lindseydiloreto/craft-upvote';
+		return 'https://craftpl.us/plugins/upvote';
 		//return 'http://doublesecretagency.com';
 	}
 

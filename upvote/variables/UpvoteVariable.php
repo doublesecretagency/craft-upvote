@@ -15,13 +15,13 @@ class UpvoteVariable
 	}
 
 	// 
-	public function upvoteIcon($elementId, $domElement)
+	public function upvote($elementId, $domElement)
 	{
 		return $this->_renderIcon($elementId, $domElement, Vote::Upvote);
 	}
 
 	// 
-	public function downvoteIcon($elementId, $domElement)
+	public function downvote($elementId, $domElement)
 	{
 		return $this->_renderIcon($elementId, $domElement, Vote::Downvote);
 	}
@@ -95,7 +95,7 @@ window.csrfTokenValue = "'.craft()->request->getCsrfToken().'";
 	}
 
 	// 
-	public function mostPopular(ElementCriteriaModel $entries)
+	public function sort(ElementCriteriaModel $entries)
 	{
 		return craft()->upvote_query->orderByTally($entries);
 	}
