@@ -72,6 +72,7 @@ class UpvotePlugin extends BasePlugin
 			'requireLogin'     => array(AttributeType::Bool, 'default' => true),
 			'allowDownvoting'  => array(AttributeType::Bool, 'default' => true),
 			'allowVoteRemoval' => array(AttributeType::Bool, 'default' => true),
+			'keepVoteLog'      => array(AttributeType::Bool, 'default' => false),
 		);
 	}
 

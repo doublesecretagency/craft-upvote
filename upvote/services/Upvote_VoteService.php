@@ -25,29 +25,13 @@ class Upvote_VoteService extends BaseApplicationComponent
 		
 		// Update element tally
 		$this->_updateElementTally($elementId, $vote);
+		$this->_updateVoteLog($elementId, $vote);
 
 		return array(
 			'id'   => $elementId,
 			'vote' => $vote,
 		);
 
-	}
-
-	// 
-	private function _updateElementTally($elementId, $vote)
-	{
-		// Load existing element tally
-		$record = Upvote_ElementTallyRecord::model()->findByPK($elementId);
-		// If no tally exists, create new
-		if (!$record) {
-			$record = new Upvote_ElementTallyRecord;
-			$record->id = $elementId;
-			$record->tally = 0;
-		}
-		// Register vote
-		$record->tally += $vote;
-		// Save
-		return $record->save();
 	}
 
 	// 
@@ -104,6 +88,38 @@ class Upvote_VoteService extends BaseApplicationComponent
 	}
 
 	// 
+	private function _updateElementTally($elementId, $vote)
+	{
+		// Load existing element tally
+		$record = Upvote_ElementTallyRecord::model()->findByPK($elementId);
+		// If no tally exists, create new
+		if (!$record) {
+			$record = new Upvote_ElementTallyRecord;
+			$record->id = $elementId;
+			$record->tally = 0;
+		}
+		// Register vote
+		$record->tally += $vote;
+		// Save
+		return $record->save();
+	}
+
+	// 
+	private function _updateVoteLog($elementId, $vote, $unvote = false)
+	{
+		if (craft()->upvote->settings['keepVoteLog']) {
+			$currentUser = craft()->userSession->getUser();
+			$record = new Upvote_VoteLogRecord;
+			$record->elementId = $elementId;
+			$record->userId    = ($currentUser ? $currentUser->id : null);
+			$record->ipAddress = $_SERVER['REMOTE_ADDR'];
+			$record->voteValue = $vote;
+			$record->wasUnvote = (int) $unvote;
+			$record->save();
+		}
+	}
+
+	// 
 	public function removeVote($elementId)
 	{
 		$originalVote = false;
@@ -114,6 +130,7 @@ class Upvote_VoteService extends BaseApplicationComponent
 		if ($originalVote) {
 			$antivote = (-1 * $originalVote);
 			$this->_updateElementTally($elementId, $antivote);
+			$this->_updateVoteLog($elementId, $antivote, true);
 			return array(
 				'id'       => $elementId,
 				'antivote' => $antivote,

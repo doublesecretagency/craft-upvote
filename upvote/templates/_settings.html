@@ -28,3 +28,20 @@
 	errors: settings.getErrors('allowVoteRemoval')
 }) }}
 <p>Occasionally users will change their mind after voting. This option allows them to "take back" their vote.</p>
+
+<hr/>
+
+<h2>Complete Vote Log</h2>
+
+{{ forms.checkbox({
+	label: "<strong>Keep a detailed record of all votes</strong>"|t,
+	id: 'keepVoteLog',
+	name: 'keepVoteLog',
+	checked: settings.keepVoteLog,
+	errors: settings.getErrors('keepVoteLog')
+}) }}
+<p>Generally unnecessary... The detailed log is not used to calculate the tally for each element.</p>
+<ul>
+	<li><strong>PRO:</strong> You have a detailed log of every vote cast, which can then be accessed by another plugin via the <code>Upvote_VoteLogRecord</code> class.</li>
+	<li><strong>CON:</strong> Any time Craft needs to create a backup database, it could take a very long time (depending on how big the votes table gets).</li>
+</ul>
