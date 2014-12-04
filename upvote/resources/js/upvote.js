@@ -1,4 +1,3 @@
-
 // Load AJAX library
 var ajax = window.superagent;
 
@@ -20,9 +19,9 @@ var upvote = {
 	},
 	// Cast vote
 	_vote: function (elementId, vote) {
-		// Set icon element
-		var icon = document.getElementById('upvote-'+vote+'-'+elementId);
-		var voteMatch = ((' '+icon.className+' ').indexOf(' upvote-vote-match ') > -1);
+		// Set icon elements
+		var icons = Sizzle('.upvote-'+vote+'-'+elementId);
+		var voteMatch = ((' '+icons[0].className+' ').indexOf(' upvote-vote-match ') > -1);
 		// Set data
 		var data = {'id':elementId};
 		data[window.csrfTokenName] = window.csrfTokenValue; // Append CSRF Token
@@ -41,7 +40,9 @@ var upvote = {
 					// If no error message was returned
 					if (!errorReturned) {
 						upvote._updateTally(elementId, results.vote);
-						icon.className += ' upvote-vote-match';
+						for (var i = 0; i < icons.length; i++) {
+							icons[i].className += ' upvote-vote-match';
+						}
 					}
 				})
 			;
@@ -52,9 +53,9 @@ var upvote = {
 	},
 	// Update tally
 	_updateTally: function (elementId, vote) {
-		var tally = document.getElementById('upvote-tally-'+elementId);
-		if (tally) {
-			tally.textContent = parseInt(tally.textContent) + parseInt(vote);
+		var tallies = Sizzle('.upvote-tally-'+elementId);
+		for (var i = 0; i < tallies.length; i++) {
+			tallies[i].textContent = parseInt(tallies[i].textContent) + parseInt(vote);
 		}
 	}
 }

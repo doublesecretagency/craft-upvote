@@ -7,10 +7,10 @@ class UpvoteVariable
 	// 
 	public function tally($elementId)
 	{
-		$id    = 'upvote-tally-'.$elementId;
-		$class = 'upvote-tally';
+		$genericClass = 'upvote-tally';
+		$uniqueClass  = 'upvote-tally-'.$elementId;
 		$tally = craft()->upvote_query->tally($elementId);
-		$span  = '<span id="'.$id.'" class="'.$class.'">'.$tally.'</span>';
+		$span  = '<span class="'.$genericClass.' '.$uniqueClass.'">'.$tally.'</span>';
 		return TemplateHelper::getRaw($span);
 	}
 
@@ -30,17 +30,17 @@ class UpvoteVariable
 	private function _renderIcon($elementId, $domElement, $vote)
 	{
 		// Establish basics
-		$class = 'upvote-vote';
+		$genericClass = 'upvote-vote ';
 		switch ($vote) {
 			case Vote::Upvote:
-				$id = 'upvote-upvote-'.$elementId;
 				$js = $this->jsUpvote($elementId);
-				$class .= ' upvote-upvote';
+				$genericClass .= 'upvote-upvote';
+				$uniqueClass   = 'upvote-upvote-'.$elementId;
 				break;
 			case Vote::Downvote:
-				$id = 'upvote-downvote-'.$elementId;
 				$js = $this->jsDownvote($elementId);
-				$class .= ' upvote-downvote';
+				$genericClass .= 'upvote-downvote';
+				$uniqueClass   = 'upvote-downvote-'.$elementId;
 				break;
 		}
 		// Get user vote history
@@ -51,10 +51,10 @@ class UpvoteVariable
 		}
 		// If user already voted in this direction, mark as a match
 		if (array_key_exists($elementId, $history) && ($history[$elementId] == $vote)) {
-			$class .= ' upvote-vote-match';
+			$genericClass .= ' upvote-vote-match';
 		}
 		// Compile DOM element
-		$span = '<span onclick="'.$js.'" id="'.$id.'" class="'.$class.'">'.$domElement.'</span>';
+		$span = '<span onclick="'.$js.'" class="'.$genericClass.' '.$uniqueClass.'">'.$domElement.'</span>';
 		return TemplateHelper::getRaw($span);
 	}
 
@@ -62,7 +62,7 @@ class UpvoteVariable
 	public function jsUpvote($elementId, $prefix = false)
 	{
 		$this->_includeJs();
-		return ($prefix?'javascript:':'').'upvote.upvote('.$elementId.')';
+		return ($prefix?'javascript:':'')."upvote.upvote($elementId)";
 	}
 
 	// 
@@ -75,6 +75,7 @@ class UpvoteVariable
 	// 
 	private function _includeJs()
 	{
+		craft()->templates->includeJsResource('upvote/js/sizzle.js');
 		craft()->templates->includeJsResource('upvote/js/superagent.js');
 		craft()->templates->includeJsResource('upvote/js/upvote.js');
 		if (craft()->upvote->settings['allowVoteRemoval']) {

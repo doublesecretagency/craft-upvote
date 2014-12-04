@@ -1,13 +1,10 @@
-
 // This script is only available if "Allow vote removal" is checked
 
 // Extend upvote object to allow vote removal
 upvote.removeVote = function (elementId) {
-
 	// Set data
 	var data = {'id':elementId};
 	data[window.csrfTokenName] = window.csrfTokenValue; // Append CSRF Token
-
 	// Cast vote
 	ajax
 		.post('/actions/upvote/remove')
@@ -30,8 +27,8 @@ upvote.removeVote = function (elementId) {
 
 // Extend upvote object to allow vote removal
 upvote._removeVoteClass = function (elementId, vote) {
-	var icon = document.getElementById('upvote-'+vote+'-'+elementId);
-	if (icon) {
-		icon.className = icon.className.replace('upvote-vote-match', '');
+	var icons = Sizzle('.upvote-'+vote+'-'+elementId);
+	for (var i = 0; i < icons.length; i++) {
+		icons[i].className = icons[i].className.replace('upvote-vote-match', '');
 	}
 }

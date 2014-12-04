@@ -47,5 +47,23 @@ class UpvoteService extends BaseApplicationComponent
 			$this->initElementTally($elementId);
 		}
 	}
+	
+	// Coming Soon
+	//  - Will allow complex vote filtering,
+	//    based on detailed vote log
+	/*
+	public function getDetailedVotes($params) {
+		$params = array(
+			'id' => '',
+			'elementId' => '',
+			'userId' => '',
+			'ipAddress' => '',
+			'voteValue' => '',
+			'wasUnvote' => '',
+			'startDateTime' => '',
+			'endDateTime' => '',
+		);
+	}
+	*/
 
 }
