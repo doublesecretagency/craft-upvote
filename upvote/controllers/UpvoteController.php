@@ -21,6 +21,24 @@ class UpvoteController extends BaseController
 		}
 	}
 
+	// Swap vote on specified element
+	public function actionSwap()
+	{
+		if (!craft()->upvote->settings['allowVoteRemoval']) {
+			$this->returnJson('Unable to swap vote. Vote removal is disabled.');
+		} else if (!craft()->upvote->settings['allowDownvoting']) {
+			$this->returnJson('Unable to swap vote. Downvoting is disabled.');
+		} else {
+			$elementId = craft()->request->getPost('id');
+			$response = craft()->upvote_vote->removeVote($elementId);
+			if (is_array($response)) {
+				return $this->_castVote($response['antivote']);
+			} else {
+				$this->returnJson($response);
+			}
+		}
+	}
+
 	// Vote on specified element
 	private function _castVote($vote)
 	{
@@ -29,7 +47,6 @@ class UpvoteController extends BaseController
 		$loginRequired = craft()->upvote->settings['requireLogin'];
 		if ($loginRequired && !$loggedIn) {
 			$this->returnJson('You must be logged in to vote.');
-		//} else if () {
 		} else {
 			$elementId = craft()->request->getPost('id');
 			$response = craft()->upvote_vote->castVote($elementId, $vote);

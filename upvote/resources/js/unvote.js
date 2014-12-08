@@ -28,7 +28,5 @@ upvote.removeVote = function (elementId) {
 // Extend upvote object to allow vote removal
 upvote._removeVoteClass = function (elementId, vote) {
 	var icons = Sizzle('.upvote-'+vote+'-'+elementId);
-	for (var i = 0; i < icons.length; i++) {
-		icons[i].className = icons[i].className.replace('upvote-vote-match', '');
-	}
+	upvote._removeMatchClass(icons);
 }
