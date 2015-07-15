@@ -27,6 +27,9 @@ var upvote = {
 		data[window.csrfTokenName] = window.csrfTokenValue; // Append CSRF Token
 		// If matching vote has not been cast
 		if (!voteMatch) {
+
+			// TODO: If downvoting is disabled, "opposites" are irrelevant
+
 			// Define opposite
 			var opposite;
 			switch (vote) {
@@ -81,7 +84,11 @@ var upvote = {
 	},
 	// Determine whether matching vote has already been cast
 	_determineMatch: function (icons) {
-		return ((' '+icons[0].className+' ').indexOf(' upvote-vote-match ') > -1);
+		if (!icons.length) {
+			return false;
+		} else {
+			return ((' '+icons[0].className+' ').indexOf(' upvote-vote-match ') > -1);
+		}
 	},
 	// Add vote match class to icons
 	_addMatchClass: function (icons) {
