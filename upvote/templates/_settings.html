@@ -29,6 +29,15 @@
 }) }}
 <p>Occasionally users will change their mind after voting. This option allows them to "take back" their vote.</p>
 
+{{ forms.checkbox({
+	label: "<strong>Allow Font Awesome</strong>"|t,
+	id: 'allowFontAwesome',
+	name: 'allowFontAwesome',
+	checked: settings.allowFontAwesome,
+	errors: settings.getErrors('allowFontAwesome')
+}) }}
+<p>The default up &amp; down icons are generated using <a href="http://fortawesome.github.io/Font-Awesome/" target="_blank">Font Awesome</a>. It's loaded automatically by the plugin, but can be disabled if necessary.</p>
+
 <hr/>
 
 <h2>Complete Vote Log</h2>

@@ -4,7 +4,12 @@ namespace Craft;
 class UpvoteVariable
 {
 
-	// 
+	private $_disabled = array();
+
+	private $_cssIncluded = false;
+	private $_jsIncluded  = false;
+
+	//
 	public function tally($elementId)
 	{
 		$genericClass = 'upvote-tally';
@@ -14,21 +19,24 @@ class UpvoteVariable
 		return TemplateHelper::getRaw($span);
 	}
 
-	// 
+	//
 	public function upvote($elementId, $domElement)
 	{
 		return $this->_renderIcon($elementId, $domElement, Vote::Upvote);
 	}
 
-	// 
+	//
 	public function downvote($elementId, $domElement)
 	{
 		return $this->_renderIcon($elementId, $domElement, Vote::Downvote);
 	}
 
-	// 
+	//
 	private function _renderIcon($elementId, $domElement, $vote)
 	{
+
+		$this->_includeCss();
+
 		// Establish basics
 		$genericClass = 'upvote-vote ';
 		switch ($vote) {
@@ -58,21 +66,38 @@ class UpvoteVariable
 		return TemplateHelper::getRaw($span);
 	}
 
-	// 
+	//
 	public function jsUpvote($elementId, $prefix = false)
 	{
 		$this->_includeJs();
 		return ($prefix?'javascript:':'')."upvote.upvote($elementId)";
 	}
 
-	// 
+	//
 	public function jsDownvote($elementId, $prefix = false)
 	{
 		$this->_includeJs();
 		return ($prefix?'javascript:':'')."upvote.downvote($elementId)";
 	}
 
-	// 
+	// Include CSS
+	private function _includeCss()
+	{
+		// If CSS is enabled and not yet included
+		if (!$this->_cssIncluded && !in_array('css', $this->_disabled)) {
+
+			// Include CSS resources
+			if (craft()->upvote->settings['allowFontAwesome']) {
+				craft()->templates->includeCssResource('upvote/css/font-awesome.min.css');
+			}
+			craft()->templates->includeCssResource('upvote/css/upvote.css');
+
+			// Mark CSS as included
+			$this->_cssIncluded = true;
+		}
+	}
+
+	//
 	private function _includeJs()
 	{
 		craft()->templates->includeJsResource('upvote/js/sizzle.js');
@@ -95,7 +120,7 @@ window.csrfTokenValue = "'.craft()->request->getCsrfToken().'";
 		}
 	}
 
-	// 
+	//
 	public function sort(ElementCriteriaModel $entries)
 	{
 		return craft()->upvote_query->orderByTally($entries);
