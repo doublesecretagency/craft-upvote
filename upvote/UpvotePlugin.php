@@ -43,9 +43,24 @@ class UpvotePlugin extends BasePlugin
 		return Craft::t('Upvote');
 	}
 
+	public function getDescription()
+	{
+		return 'Allows users to upvote/downvote or "like", any type of element.';
+	}
+
+	public function getDocumentationUrl()
+	{
+		return 'https://craftpl.us/plugins/upvote';
+	}
+
 	public function getVersion()
 	{
-		return '1.0.1';
+		return '1.2.0 rc';
+	}
+
+	public function getSchemaVersion()
+	{
+		return '1.0.2'; // Bump to 1.2.0 with migration!
 	}
 
 	public function getDeveloper()
@@ -81,9 +96,9 @@ class UpvotePlugin extends BasePlugin
 		require('enums/Vote.php');
 	}
 
-    public function onAfterInstall()
-    {
+	public function onAfterInstall()
+	{
 		craft()->upvote->initAllElementTallies();
-    }
-	
+	}
+
 }
