@@ -4,14 +4,14 @@ namespace Craft;
 class Upvote_QueryService extends BaseApplicationComponent
 {
 
-	// 
+	//
 	public function tally($elementId)
 	{
 		$record = Upvote_ElementTallyRecord::model()->findByPK($elementId);
 		return ($record ? $record->tally : 0);
 	}
 
-	// 
+	//
 	public function userHistory()
 	{
 		$user = craft()->userSession->getUser();
@@ -26,7 +26,7 @@ class Upvote_QueryService extends BaseApplicationComponent
 
 
 	/*
-	// 
+	//
 	public function orderByTally(ElementCriteriaModel $criteria) {
 		$query = craft()->elements->buildElementsQuery($criteria);
 		$query->join('upvote_elementtallies upvote_elementtallies', 'upvote_elementtallies.id = elements.id');

@@ -4,25 +4,58 @@ namespace Craft;
 class Upvote_VoteService extends BaseApplicationComponent
 {
 
-	// 
+	public $upvoteIcon;
+	public $downvoteIcon;
+
+	public $alreadyVoted = 'You have already voted on this element.';
+
+	//
+	public function init()
+	{
+		$this->_loadIcons();
+	}
+
+	//
+	private function _loadIcons()
+	{
+		$this->upvoteIcon   = $this->_fa('caret-up');
+		$this->downvoteIcon = $this->_fa('caret-down');
+	}
+
+	//
+	private function _fa($starType)
+	{
+		return '<i class="fa fa-'.$starType.' fa-2x"></i>';
+	}
+
+	//
+	public function setIcons($iconMap = array())
+	{
+		foreach ($iconMap as $type => $html) {
+			switch ($type) {
+				case 'up'   : $this->upvoteIcon   = $html; break;
+				case 'down' : $this->downvoteIcon = $html; break;
+			}
+		}
+	}
+
+	//
 	public function castVote($elementId, $vote)
 	{
-
-		$alreadyVoted = 'You have already voted on this element.';
 
 		// If login is required
 		if (craft()->upvote->settings['requireLogin']) {
 			// Update user history
 			if (!$this->_updateUserHistoryDatabase($elementId, $vote)) {
-				return $alreadyVoted;
+				return $this->alreadyVoted;
 			}
 		} else {
 			// Update user cookie
 			if (!$this->_updateUserHistoryCookie($elementId, $vote)) {
-				return $alreadyVoted;
+				return $this->alreadyVoted;
 			}
 		}
-		
+
 		// Update element tally
 		$this->_updateElementTally($elementId, $vote);
 		$this->_updateVoteLog($elementId, $vote);
@@ -34,7 +67,7 @@ class Upvote_VoteService extends BaseApplicationComponent
 
 	}
 
-	// 
+	//
 	private function _updateUserHistoryDatabase($elementId, $vote)
 	{
 		$user = craft()->userSession->getUser();
@@ -63,7 +96,7 @@ class Upvote_VoteService extends BaseApplicationComponent
 		return $record->save();
 	}
 
-	// 
+	//
 	private function _updateUserHistoryCookie($elementId, $vote)
 	{
 		$history =& craft()->upvote->anonymousHistory;
@@ -78,7 +111,7 @@ class Upvote_VoteService extends BaseApplicationComponent
 
 	}
 
-	// 
+	//
 	private function _saveUserHistoryCookie()
 	{
 		$cookie   = craft()->upvote->userCookie;
@@ -87,7 +120,7 @@ class Upvote_VoteService extends BaseApplicationComponent
 		craft()->userSession->saveCookie($cookie, $history, $lifespan);
 	}
 
-	// 
+	//
 	private function _updateElementTally($elementId, $vote)
 	{
 		// Load existing element tally
@@ -104,7 +137,7 @@ class Upvote_VoteService extends BaseApplicationComponent
 		return $record->save();
 	}
 
-	// 
+	//
 	private function _updateVoteLog($elementId, $vote, $unvote = false)
 	{
 		if (craft()->upvote->settings['keepVoteLog']) {
@@ -119,7 +152,7 @@ class Upvote_VoteService extends BaseApplicationComponent
 		}
 	}
 
-	// 
+	//
 	public function removeVote($elementId)
 	{
 		$originalVote = false;
@@ -141,7 +174,7 @@ class Upvote_VoteService extends BaseApplicationComponent
 
 	}
 
-	// 
+	//
 	private function _removeVoteFromCookie($elementId, &$originalVote)
 	{
 		// Remove from cookie history
@@ -153,7 +186,7 @@ class Upvote_VoteService extends BaseApplicationComponent
 		}
 	}
 
-	// 
+	//
 	private function _removeVoteFromDb($elementId, &$originalVote)
 	{
 		$user = craft()->userSession->getUser();

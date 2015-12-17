@@ -10,7 +10,7 @@ class UpvoteVariable
 	private $_jsIncluded  = false;
 
 	//
-	public function tally($elementId)
+	public function tally($elementId, $key = null)
 	{
 		$genericClass = 'upvote-tally';
 		$uniqueClass  = 'upvote-tally-'.$elementId;
@@ -20,19 +20,19 @@ class UpvoteVariable
 	}
 
 	//
-	public function upvote($elementId, $domElement)
+	public function upvote($elementId, $key = null)
 	{
-		return $this->_renderIcon($elementId, $domElement, Vote::Upvote);
+		return $this->_renderIcon($elementId, $key, Vote::Upvote);
 	}
 
 	//
-	public function downvote($elementId, $domElement)
+	public function downvote($elementId, $key = null)
 	{
-		return $this->_renderIcon($elementId, $domElement, Vote::Downvote);
+		return $this->_renderIcon($elementId, $key, Vote::Downvote);
 	}
 
 	//
-	private function _renderIcon($elementId, $domElement, $vote)
+	private function _renderIcon($elementId, $key = null, $vote)
 	{
 
 		$this->_includeCss();
@@ -41,14 +41,16 @@ class UpvoteVariable
 		$genericClass = 'upvote-vote ';
 		switch ($vote) {
 			case Vote::Upvote:
-				$js = $this->jsUpvote($elementId);
+				$icon = craft()->upvote_vote->upvoteIcon;
+				$js = $this->jsUpvote($elementId, $key);
 				$genericClass .= 'upvote-upvote';
-				$uniqueClass   = 'upvote-upvote-'.$elementId;
+				$uniqueClass   = 'upvote-upvote-'.$elementId.($key ? '-'.$key : '');
 				break;
 			case Vote::Downvote:
-				$js = $this->jsDownvote($elementId);
+				$icon = craft()->upvote_vote->downvoteIcon;
+				$js = $this->jsDownvote($elementId, $key);
 				$genericClass .= 'upvote-downvote';
-				$uniqueClass   = 'upvote-downvote-'.$elementId;
+				$uniqueClass   = 'upvote-downvote-'.$elementId.($key ? '-'.$key : '');
 				break;
 		}
 		// Get user vote history
@@ -62,19 +64,19 @@ class UpvoteVariable
 			$genericClass .= ' upvote-vote-match';
 		}
 		// Compile DOM element
-		$span = '<span onclick="'.$js.'" class="'.$genericClass.' '.$uniqueClass.'">'.$domElement.'</span>';
+		$span = '<span onclick="'.$js.'" class="'.$genericClass.' '.$uniqueClass.'">'.$icon.'</span>';
 		return TemplateHelper::getRaw($span);
 	}
 
 	//
-	public function jsUpvote($elementId, $prefix = false)
+	public function jsUpvote($elementId, $key = null, $prefix = false)
 	{
 		$this->_includeJs();
 		return ($prefix?'javascript:':'')."upvote.upvote($elementId)";
 	}
 
 	//
-	public function jsDownvote($elementId, $prefix = false)
+	public function jsDownvote($elementId, $key = null, $prefix = false)
 	{
 		$this->_includeJs();
 		return ($prefix?'javascript:':'')."upvote.downvote($elementId)";
@@ -120,10 +122,31 @@ window.csrfTokenValue = "'.craft()->request->getCsrfToken().'";
 		}
 	}
 
-	//
-	public function sort(ElementCriteriaModel $entries)
+	// ========================================================================
+
+	// Customize icons
+	public function setIcons($iconMap = array())
 	{
-		return craft()->upvote_query->orderByTally($entries);
+		return craft()->upvote_vote->setIcons($iconMap);
+	}
+
+	// Sort by "highest rated"
+	public function sort(ElementCriteriaModel $entries, $key = null)
+	{
+		return craft()->upvote_query->orderByTally($entries, $key);
+	}
+
+	// Disable native CSS and/or JS
+	public function disable($resources = array())
+	{
+		if (is_string($resources)) {
+			$resources = array($resources);
+		}
+		if (is_array($resources)) {
+			return $this->_disabled = array_map('strtolower', $resources);
+		} else {
+			return false;
+		}
 	}
 
 }
