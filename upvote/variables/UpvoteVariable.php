@@ -99,26 +99,32 @@ class UpvoteVariable
 		}
 	}
 
-	//
+	// Include JS
 	private function _includeJs()
 	{
-		craft()->templates->includeJsResource('upvote/js/sizzle.js');
-		craft()->templates->includeJsResource('upvote/js/superagent.js');
-		craft()->templates->includeJsResource('upvote/js/upvote.js');
-		if (craft()->upvote->settings['allowVoteRemoval']) {
-			craft()->templates->includeJsResource('upvote/js/unvote.js');
-		}
+		// If JS is enabled and not yet included
+		if (!$this->_jsIncluded && !in_array('js', $this->_disabled)) {
 
-		// CSRF
-		if (craft()->config->get('enableCsrfProtection') === true) {
-			if (!craft()->upvote->csrfIncluded) {
-				$csrf = '
+			// Include JS resources
+			craft()->templates->includeJsResource('upvote/js/sizzle.js');
+			craft()->templates->includeJsResource('upvote/js/superagent.js');
+			craft()->templates->includeJsResource('upvote/js/upvote.js');
+			if (craft()->upvote->settings['allowVoteRemoval']) {
+				craft()->templates->includeJsResource('upvote/js/unvote.js');
+			}
+
+			// CSRF
+			if (craft()->config->get('enableCsrfProtection') === true) {
+				if (!craft()->upvote->csrfIncluded) {
+					$csrf = '
 window.csrfTokenName = "'.craft()->config->get('csrfTokenName').'";
 window.csrfTokenValue = "'.craft()->request->getCsrfToken().'";
 ';
-				craft()->templates->includeJs($csrf);
-				craft()->upvote->csrfIncluded = true;
+					craft()->templates->includeJs($csrf);
+					craft()->upvote->csrfIncluded = true;
+				}
 			}
+
 		}
 	}
 
