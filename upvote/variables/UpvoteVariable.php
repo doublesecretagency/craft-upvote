@@ -13,8 +13,8 @@ class UpvoteVariable
 	public function tally($elementId, $key = null)
 	{
 		$genericClass = 'upvote-tally';
-		$uniqueClass  = 'upvote-tally-'.$elementId;
-		$tally = craft()->upvote_query->tally($elementId);
+		$uniqueClass  = 'upvote-tally-'.$elementId.($key ? '-'.$key : '');
+		$tally = craft()->upvote_query->tally($elementId, $key);
 		$span  = '<span class="'.$genericClass.' '.$uniqueClass.'">'.$tally.'</span>';
 		return TemplateHelper::getRaw($span);
 	}
@@ -109,8 +109,15 @@ class UpvoteVariable
 			craft()->templates->includeJsResource('upvote/js/sizzle.js');
 			craft()->templates->includeJsResource('upvote/js/superagent.js');
 			craft()->templates->includeJsResource('upvote/js/upvote.js');
+
+			// Allow Vote Removal
 			if (craft()->upvote->settings['allowVoteRemoval']) {
 				craft()->templates->includeJsResource('upvote/js/unvote.js');
+			}
+
+			// Dev Mode
+			if (craft()->config->get('devMode')) {
+				craft()->templates->includeJs('upvote.devMode = true;');
 			}
 
 			// CSRF
@@ -124,6 +131,9 @@ window.csrfTokenValue = "'.craft()->request->getCsrfToken().'";
 					craft()->upvote->csrfIncluded = true;
 				}
 			}
+
+			// Mark JS as included
+			$this->_jsIncluded = true;
 
 		}
 	}

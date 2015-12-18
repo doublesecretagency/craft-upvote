@@ -12,30 +12,6 @@ class UpvotePlugin extends BasePlugin
 		// Plugin Settings
 		craft()->upvote->settings = $this->getSettings();
 		craft()->upvote->getAnonymousHistory();
-		// Events
-		if (2.3 <= craft()->getVersion()) {
-			// NEW EVENT (Craft v2.3)
-			craft()->on('elements.saveElement', function(Event $event) {
-				craft()->upvote->initElementTally($event->params['element']->id, $event->params['isNewElement']);
-			});
-		} else {
-			// ORIGINAL EVENTS
-			craft()->on('assets.saveAsset', function(Event $event) {
-				craft()->upvote->initElementTally($event->params['asset']->id);
-			});
-			craft()->on('categories.saveCategory', function(Event $event) {
-				craft()->upvote->initElementTally($event->params['category']->id, $event->params['isNewCategory']);
-			});
-			craft()->on('entries.saveEntry', function(Event $event) {
-				craft()->upvote->initElementTally($event->params['entry']->id, $event->params['isNewEntry']);
-			});
-			craft()->on('tags.saveTag', function(Event $event) {
-				craft()->upvote->initElementTally($event->params['tag']->id, $event->params['isNewTag']);
-			});
-			craft()->on('users.saveUser', function(Event $event) {
-				craft()->upvote->initElementTally($event->params['user']->id, $event->params['isNewUser']);
-			});
-		}
 	}
 
 	public function getName()
@@ -60,7 +36,7 @@ class UpvotePlugin extends BasePlugin
 
 	public function getSchemaVersion()
 	{
-		return '1.0.2'; // Bump to 1.2.0 with migration!
+		return '1.0.5'; // Bump to 1.2.0 with migration!
 	}
 
 	public function getDeveloper()
@@ -95,11 +71,6 @@ class UpvotePlugin extends BasePlugin
 	private function _loadEnums()
 	{
 		require('enums/Vote.php');
-	}
-
-	public function onAfterInstall()
-	{
-		craft()->upvote->initAllElementTallies();
 	}
 
 }

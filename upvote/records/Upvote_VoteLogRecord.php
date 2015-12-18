@@ -11,6 +11,7 @@ class Upvote_VoteLogRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
+			'voteKey' => AttributeType::String,
 			'userId' => AttributeType::Number,
 			'ipAddress' => AttributeType::String,
 			'voteValue' => array(

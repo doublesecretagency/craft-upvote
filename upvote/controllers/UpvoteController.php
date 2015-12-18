@@ -30,7 +30,8 @@ class UpvoteController extends BaseController
 			$this->returnJson('Unable to swap vote. Downvoting is disabled.');
 		} else {
 			$elementId = craft()->request->getPost('id');
-			$response = craft()->upvote_vote->removeVote($elementId);
+			$key = craft()->request->getPost('key');
+			$response = craft()->upvote_vote->removeVote($elementId, $key);
 			if (is_array($response)) {
 				return $this->_castVote($response['antivote']);
 			} else {
@@ -49,7 +50,8 @@ class UpvoteController extends BaseController
 			$this->returnJson('You must be logged in to vote.');
 		} else {
 			$elementId = craft()->request->getPost('id');
-			$response = craft()->upvote_vote->castVote($elementId, $vote);
+			$key = craft()->request->getPost('key');
+			$response = craft()->upvote_vote->castVote($elementId, $key, $vote);
 			$this->returnJson($response);
 		}
 	}
@@ -61,7 +63,8 @@ class UpvoteController extends BaseController
 	{
 		$this->requireAjaxRequest();
 		$elementId = craft()->request->getPost('id');
-		$response = craft()->upvote_vote->removeVote($elementId);
+		$key = craft()->request->getPost('key');
+		$response = craft()->upvote_vote->removeVote($elementId, $key);
 		$this->returnJson($response);
 	}
 

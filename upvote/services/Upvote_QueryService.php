@@ -5,9 +5,12 @@ class Upvote_QueryService extends BaseApplicationComponent
 {
 
 	//
-	public function tally($elementId)
+	public function tally($elementId, $key = null)
 	{
-		$record = Upvote_ElementTallyRecord::model()->findByPK($elementId);
+		$record = Upvote_ElementTallyRecord::model()->findByAttributes(array(
+			'elementId' => $elementId,
+			'voteKey'   => $key,
+		));
 		return ($record ? $record->tally : 0);
 	}
 
@@ -24,35 +27,38 @@ class Upvote_QueryService extends BaseApplicationComponent
 		return array();
 	}
 
-
-	/*
 	//
-	public function orderByTally(ElementCriteriaModel $criteria) {
-		$query = craft()->elements->buildElementsQuery($criteria);
-		$query->join('upvote_elementtallies upvote_elementtallies', 'upvote_elementtallies.id = elements.id');
-		$query->order('upvote_elementtallies.tally DESC, upvote_elementtallies.id ASC');
-		return $query->queryAll();
-	}
-	*/
-
-	//
-	public function orderByTally(ElementCriteriaModel $criteria) {
-		$elementIds = $this->_elementIdsByTally();
-		$criteria->setAttribute('id', $elementIds);
-		$criteria->setAttribute('order', 'FIELD(elements.id, '.join(', ', $elementIds).')');
+	public function orderByTally(ElementCriteriaModel $criteria, $key = null) {
+		// Collect and sort elementIds
+		$elementIds = $this->_elementIdsByTally($key);
+		if ($elementIds) {
+			// Match order of criteria to elementIds
+			$criteria->setAttribute('order', 'FIELD(elements.id, '.join(', ', $elementIds).') DESC');
+		}
 		return $criteria;
 	}
 
 	//
-	private function _elementIdsByTally() {
-		$ranking = Upvote_ElementTallyRecord::model()->findAll(array(
-			'order' => 'tally DESC, id ASC'
-		));
-		$elementIds = array();
-		foreach ($ranking as $element) {
-			$elementIds[] = $element->id;
+	private function _elementIdsByTally($key)
+	{
+		// Don't proceed if key isn't null, string, or numeric
+		if (!is_null($key) && !is_string($key) && !is_numeric($key)) {
+			return false;
+		} else if (null === $key) {
+			$conditions = 'voteKey IS NULL';
+		} else {
+			$conditions = 'voteKey = :key';
 		}
-		return $elementIds;
+		// Get matching ratings
+		$query = craft()->db->createCommand()
+			->select('elementId')
+			->from('upvote_elementtallies')
+			->where($conditions, array(':key' => $key))
+			->order('tally desc, dateUpdated desc')
+		;
+		// Return elementIds
+		$elementIds = $query->queryColumn();
+		return array_reverse($elementIds);
 	}
 
 }

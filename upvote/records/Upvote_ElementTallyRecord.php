@@ -11,6 +11,7 @@ class Upvote_ElementTallyRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
+			'voteKey' => AttributeType::String,
 			'tally' => AttributeType::Number,
 		);
 	}
@@ -18,7 +19,7 @@ class Upvote_ElementTallyRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'element' => array(static::BELONGS_TO, 'ElementRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
+			'element' => array(static::BELONGS_TO, 'ElementRecord', 'required' => true, 'onDelete' => static::CASCADE),
 		);
 	}
 

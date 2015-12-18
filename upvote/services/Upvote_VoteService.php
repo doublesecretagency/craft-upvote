@@ -23,9 +23,9 @@ class Upvote_VoteService extends BaseApplicationComponent
 	}
 
 	//
-	private function _fa($starType)
+	private function _fa($iconType)
 	{
-		return '<i class="fa fa-'.$starType.' fa-2x"></i>';
+		return '<i class="fa fa-'.$iconType.' fa-2x"></i>';
 	}
 
 	//
@@ -40,35 +40,36 @@ class Upvote_VoteService extends BaseApplicationComponent
 	}
 
 	//
-	public function castVote($elementId, $vote)
+	public function castVote($elementId, $key, $vote)
 	{
 
 		// If login is required
 		if (craft()->upvote->settings['requireLogin']) {
 			// Update user history
-			if (!$this->_updateUserHistoryDatabase($elementId, $vote)) {
+			if (!$this->_updateUserHistoryDatabase($elementId, $key, $vote)) {
 				return $this->alreadyVoted;
 			}
 		} else {
 			// Update user cookie
-			if (!$this->_updateUserHistoryCookie($elementId, $vote)) {
+			if (!$this->_updateUserHistoryCookie($elementId, $key, $vote)) {
 				return $this->alreadyVoted;
 			}
 		}
 
 		// Update element tally
-		$this->_updateElementTally($elementId, $vote);
-		$this->_updateVoteLog($elementId, $vote);
+		$this->_updateElementTally($elementId, $key, $vote);
+		$this->_updateVoteLog($elementId, $key, $vote);
 
 		return array(
 			'id'   => $elementId,
+			'key'  => $key,
 			'vote' => $vote,
 		);
 
 	}
 
 	//
-	private function _updateUserHistoryDatabase($elementId, $vote)
+	private function _updateUserHistoryDatabase($elementId, $key, $vote)
 	{
 		$user = craft()->userSession->getUser();
 		// If user is not logged in, return false
@@ -77,32 +78,34 @@ class Upvote_VoteService extends BaseApplicationComponent
 		}
 		// Load existing element history
 		$record = Upvote_UserHistoryRecord::model()->findByPK($user->id);
+		$item = craft()->upvote->setItemKey($elementId, $key);
 		// If no history exists, create new
 		if (!$record) {
 			$record = new Upvote_UserHistoryRecord;
 			$record->id = $user->id;
 			$history = array();
 		// Else if user already voted on element, return false
-		} else if (array_key_exists($elementId, $record->history)) {
+		} else if (array_key_exists($item, $record->history)) {
 			return false;
 		// Else, add vote to history
 		} else {
 			$history = $record->history;
 		}
 		// Register vote
-		$history[$elementId] = $vote;
+		$history[$item] = $vote;
 		$record->history = $history;
 		// Save
 		return $record->save();
 	}
 
 	//
-	private function _updateUserHistoryCookie($elementId, $vote)
+	private function _updateUserHistoryCookie($elementId, $key, $vote)
 	{
 		$history =& craft()->upvote->anonymousHistory;
+		$item = craft()->upvote->setItemKey($elementId, $key);
 		// If not already voted for, cast vote
-		if (!array_key_exists($elementId, $history)) {
-			$history[$elementId] = $vote;
+		if (!array_key_exists($item, $history)) {
+			$history[$item] = $vote;
 			$this->_saveUserHistoryCookie();
 			return true;
 		} else {
@@ -121,15 +124,19 @@ class Upvote_VoteService extends BaseApplicationComponent
 	}
 
 	//
-	private function _updateElementTally($elementId, $vote)
+	private function _updateElementTally($elementId, $key, $vote)
 	{
 		// Load existing element tally
-		$record = Upvote_ElementTallyRecord::model()->findByPK($elementId);
+		$record = Upvote_ElementTallyRecord::model()->findByAttributes(array(
+			'elementId' => $elementId,
+			'voteKey'   => $key,
+		));
 		// If no tally exists, create new
 		if (!$record) {
 			$record = new Upvote_ElementTallyRecord;
-			$record->id = $elementId;
-			$record->tally = 0;
+			$record->elementId = $elementId;
+			$record->voteKey   = $key;
+			$record->tally     = 0;
 		}
 		// Register vote
 		$record->tally += $vote;
@@ -138,12 +145,13 @@ class Upvote_VoteService extends BaseApplicationComponent
 	}
 
 	//
-	private function _updateVoteLog($elementId, $vote, $unvote = false)
+	private function _updateVoteLog($elementId, $key, $vote, $unvote = false)
 	{
 		if (craft()->upvote->settings['keepVoteLog']) {
 			$currentUser = craft()->userSession->getUser();
 			$record = new Upvote_VoteLogRecord;
 			$record->elementId = $elementId;
+			$record->voteKey   = $key;
 			$record->userId    = ($currentUser ? $currentUser->id : null);
 			$record->ipAddress = $_SERVER['REMOTE_ADDR'];
 			$record->voteValue = $vote;
@@ -153,19 +161,20 @@ class Upvote_VoteService extends BaseApplicationComponent
 	}
 
 	//
-	public function removeVote($elementId)
+	public function removeVote($elementId, $key)
 	{
 		$originalVote = false;
 
-		$this->_removeVoteFromCookie($elementId, $originalVote);
-		$this->_removeVoteFromDb($elementId, $originalVote);
+		$this->_removeVoteFromCookie($elementId, $key, $originalVote);
+		$this->_removeVoteFromDb($elementId, $key, $originalVote);
 
 		if ($originalVote) {
 			$antivote = (-1 * $originalVote);
-			$this->_updateElementTally($elementId, $antivote);
-			$this->_updateVoteLog($elementId, $antivote, true);
+			$this->_updateElementTally($elementId, $key, $antivote);
+			$this->_updateVoteLog($elementId, $key, $antivote, true);
 			return array(
 				'id'       => $elementId,
+				'key'      => $key,
 				'antivote' => $antivote,
 			);
 		} else {
@@ -175,19 +184,20 @@ class Upvote_VoteService extends BaseApplicationComponent
 	}
 
 	//
-	private function _removeVoteFromCookie($elementId, &$originalVote)
+	private function _removeVoteFromCookie($elementId, $key, &$originalVote)
 	{
 		// Remove from cookie history
 		$historyCookie =& craft()->upvote->anonymousHistory;
-		if (array_key_exists($elementId, $historyCookie)) {
-			$originalVote = $historyCookie[$elementId];
-			unset($historyCookie[$elementId]);
+		$item = craft()->upvote->setItemKey($elementId, $key);
+		if (array_key_exists($item, $historyCookie)) {
+			$originalVote = $historyCookie[$item];
+			unset($historyCookie[$item]);
 			$this->_saveUserHistoryCookie();
 		}
 	}
 
 	//
-	private function _removeVoteFromDb($elementId, &$originalVote)
+	private function _removeVoteFromDb($elementId, $key, &$originalVote)
 	{
 		$user = craft()->userSession->getUser();
 		if ($user) {
@@ -195,11 +205,12 @@ class Upvote_VoteService extends BaseApplicationComponent
 			if ($record) {
 				// Remove from database history
 				$historyDb = $record->history;
-				if (array_key_exists($elementId, $historyDb)) {
+				$item = craft()->upvote->setItemKey($elementId, $key);
+				if (array_key_exists($item, $historyDb)) {
 					if (!$originalVote) {
-						$originalVote = $historyDb[$elementId];
+						$originalVote = $historyDb[$item];
 					}
-					unset($historyDb[$elementId]);
+					unset($historyDb[$item]);
 					$record->history = $historyDb;
 					$record->save();
 				}
