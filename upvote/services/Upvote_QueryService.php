@@ -45,16 +45,17 @@ class Upvote_QueryService extends BaseApplicationComponent
 		if (!is_null($key) && !is_string($key) && !is_numeric($key)) {
 			return false;
 		} else if (null === $key) {
-			$conditions = 'voteKey IS NULL';
+			$conditions = 'tallies.voteKey IS NULL';
 		} else {
-			$conditions = 'voteKey = :key';
+			$conditions = 'tallies.voteKey = :key';
 		}
-		// Get matching ratings
+		// Join with elements table to sort by tally
 		$query = craft()->db->createCommand()
-			->select('elementId')
-			->from('upvote_elementtallies')
+			->select('elements.id')
+			->from('elements elements')
+			->leftJoin('upvote_elementtallies tallies', 'elements.id = tallies.elementId')
 			->where($conditions, array(':key' => $key))
-			->order('tally desc, dateUpdated desc')
+			->order('IFNULL(tallies.tally, 0) DESC, elements.id DESC')
 		;
 		// Return elementIds
 		$elementIds = $query->queryColumn();
