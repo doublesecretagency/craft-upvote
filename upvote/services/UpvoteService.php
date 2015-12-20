@@ -28,6 +28,12 @@ class UpvoteService extends BaseApplicationComponent
 		}
 	}
 
+	// Check if a key is valid
+	public function validKey($key)
+	{
+		return (is_null($key) || is_string($key) || is_numeric($key));
+	}
+
 	// Coming Soon
 	//  - Will allow complex vote filtering,
 	//    based on detailed vote log

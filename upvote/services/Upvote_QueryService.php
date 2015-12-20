@@ -41,8 +41,8 @@ class Upvote_QueryService extends BaseApplicationComponent
 	//
 	private function _elementIdsByTally($key)
 	{
-		// Don't proceed if key isn't null, string, or numeric
-		if (!is_null($key) && !is_string($key) && !is_numeric($key)) {
+		// Don't proceed if key isn't valid
+		if (!craft()->upvote->validKey($key)) {
 			return false;
 		} else if (null === $key) {
 			$conditions = 'tallies.voteKey IS NULL';
@@ -53,8 +53,7 @@ class Upvote_QueryService extends BaseApplicationComponent
 		$query = craft()->db->createCommand()
 			->select('elements.id')
 			->from('elements elements')
-			->leftJoin('upvote_elementtallies tallies', 'elements.id = tallies.elementId')
-			->where($conditions, array(':key' => $key))
+			->leftJoin('upvote_elementtallies tallies', 'elements.id = tallies.elementId AND '.$conditions, array(':key' => $key))
 			->order('IFNULL(tallies.tally, 0) DESC, elements.id DESC')
 		;
 		// Return elementIds

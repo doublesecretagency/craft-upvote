@@ -60,7 +60,8 @@ class UpvoteVariable
 			$history = craft()->upvote->anonymousHistory;
 		}
 		// If user already voted in this direction, mark as a match
-		if (array_key_exists($elementId, $history) && ($history[$elementId] == $vote)) {
+		$item = craft()->upvote->setItemKey($elementId, $key);
+		if (array_key_exists($item, $history) && ($history[$item] == $vote)) {
 			$genericClass .= ' upvote-vote-match';
 		}
 		// Compile DOM element
@@ -71,15 +72,21 @@ class UpvoteVariable
 	//
 	public function jsUpvote($elementId, $key = null, $prefix = false)
 	{
-		$this->_includeJs();
-		return ($prefix?'javascript:':'')."upvote.upvote($elementId)";
+		if (craft()->upvote->validKey($key)) {
+			$this->_includeJs();
+			$key = ($key ? "'$key'" : "null");
+			return ($prefix?'javascript:':'')."upvote.upvote($elementId, $key)";
+		}
 	}
 
 	//
 	public function jsDownvote($elementId, $key = null, $prefix = false)
 	{
-		$this->_includeJs();
-		return ($prefix?'javascript:':'')."upvote.downvote($elementId)";
+		if (craft()->upvote->validKey($key)) {
+			$this->_includeJs();
+			$key = ($key ? "'$key'" : "null");
+			return ($prefix?'javascript:':'')."upvote.downvote($elementId, $key)";
+		}
 	}
 
 	// Include CSS
