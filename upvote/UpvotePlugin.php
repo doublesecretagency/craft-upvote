@@ -31,12 +31,12 @@ class UpvotePlugin extends BasePlugin
 
 	public function getVersion()
 	{
-		return '1.2.0 rc';
+		return '1.2.0';
 	}
 
 	public function getSchemaVersion()
 	{
-		return '1.0.5'; // Bump to 1.2.0 with migration!
+		return '1.2.0';
 	}
 
 	public function getDeveloper()
