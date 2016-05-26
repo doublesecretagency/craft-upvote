@@ -15,15 +15,20 @@ class Upvote_QueryService extends BaseApplicationComponent
 	}
 
 	//
-	public function userHistory()
+	public function userHistory($user = null)
 	{
-		$user = craft()->userSession->getUser();
+		// If no user specified, get current user
+		if (!$user) {
+			$user = craft()->userSession->getUser();
+		}
+		// If user exists, get their history
 		if ($user) {
 			$record = Upvote_UserHistoryRecord::model()->findByPK($user->id);
 			if ($record) {
 				return $record->history;
 			}
 		}
+		// If still nothing, return empty array
 		return array();
 	}
 

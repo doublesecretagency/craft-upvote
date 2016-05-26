@@ -10,6 +10,12 @@ class UpvoteVariable
 	private $_jsIncluded  = false;
 
 	//
+	public function userHistory($user = null)
+	{
+		return craft()->upvote_query->userHistory($user);
+	}
+
+	//
 	public function tally($elementId, $key = null)
 	{
 		$genericClass = 'upvote-tally';
