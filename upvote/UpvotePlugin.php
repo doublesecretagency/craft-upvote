@@ -7,11 +7,13 @@ class UpvotePlugin extends BasePlugin
 	public function init()
 	{
 		parent::init();
-		// Enums
-		$this->_loadEnums();
-		// Plugin Settings
-		craft()->upvote->settings = $this->getSettings();
-		craft()->upvote->getAnonymousHistory();
+		if (!craft()->isConsole()) {
+			// Enums
+			$this->_loadEnums();
+			// Plugin Settings
+			craft()->upvote->settings = $this->getSettings();
+			craft()->upvote->getAnonymousHistory();
+		}
 	}
 
 	public function getName()
@@ -31,7 +33,7 @@ class UpvotePlugin extends BasePlugin
 
 	public function getVersion()
 	{
-		return '1.2.1';
+		return '1.2.2';
 	}
 
 	public function getSchemaVersion()
