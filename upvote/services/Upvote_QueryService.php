@@ -14,6 +14,44 @@ class Upvote_QueryService extends BaseApplicationComponent
 		return ($record ? $record->tally : 0);
 	}
 
+	// ========================================================================
+
+
+	// NEEDS A MIGRATION TO CREATE THESE COLUMNS
+	// ALSO NEEDS A SERVICE TO STORE THOSE VALUES
+
+	//
+	public function totalUpvotes($elementId, $key)
+	{
+		$record = Upvote_ElementTallyRecord::model()->findByAttributes(array(
+			'elementId' => $elementId,
+			'voteKey'   => $key,
+		));
+		return ($record ? $record->totalUpvotes : 0);
+	}
+
+	//
+	public function totalDownvotes($elementId, $key)
+	{
+		$record = Upvote_ElementTallyRecord::model()->findByAttributes(array(
+			'elementId' => $elementId,
+			'voteKey'   => $key,
+		));
+		return ($record ? $record->totalDownvotes : 0);
+	}
+
+	//
+	public function totalVotes($elementId, $key)
+	{
+		$record = Upvote_ElementTallyRecord::model()->findByAttributes(array(
+			'elementId' => $elementId,
+			'voteKey'   => $key,
+		));
+		return ($record ? $record->totalVotes : 0);
+	}
+
+	// ========================================================================
+
 	//
 	public function userHistory($user = null)
 	{

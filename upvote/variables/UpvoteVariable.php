@@ -37,6 +37,46 @@ class UpvoteVariable
 		return $this->_renderIcon($elementId, $key, Vote::Downvote);
 	}
 
+	// ========================================================================
+
+	// Output total upvotes of element
+	public function totalUpvotes($elementId, $key = null)
+	{
+		// If element ID is invalid, log error
+		if (!$elementId || !is_numeric($elementId)) {
+			UpvotePlugin::log('Invalid element ID');
+			return 0;
+		}
+
+		return craft()->upvote_query->totalUpvotes($elementId, $key);
+	}
+
+	// Output total downvotes of element
+	public function totalDownvotes($elementId, $key = null)
+	{
+		// If element ID is invalid, log error
+		if (!$elementId || !is_numeric($elementId)) {
+			UpvotePlugin::log('Invalid element ID');
+			return 0;
+		}
+
+		return craft()->upvote_query->totalDownvotes($elementId, $key);
+	}
+
+	// Output total votes of element
+	public function totalVotes($elementId, $key = null)
+	{
+		// If element ID is invalid, log error
+		if (!$elementId || !is_numeric($elementId)) {
+			UpvotePlugin::log('Invalid element ID');
+			return 0;
+		}
+
+		return craft()->upvote_query->totalVotes($elementId, $key);
+	}
+
+	// ========================================================================
+
 	//
 	private function _renderIcon($elementId, $key = null, $vote)
 	{
