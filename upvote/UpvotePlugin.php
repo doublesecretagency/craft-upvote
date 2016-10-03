@@ -33,7 +33,7 @@ class UpvotePlugin extends BasePlugin
 
 	public function getVersion()
 	{
-		return '1.2.2';
+		return '1.2.3 rc 1';
 	}
 
 	public function getSchemaVersion()
@@ -73,6 +73,23 @@ class UpvotePlugin extends BasePlugin
 	private function _loadEnums()
 	{
 		require('enums/Vote.php');
+	}
+
+	// ================================================================= //
+
+	public function defineAdditionalEntryTableAttributes()
+	{
+		return array(
+			'upvote_voteTotal' => "Vote Total",
+		);
+	}
+
+	public function getEntryTableAttributeHtml(EntryModel $entry, $attribute)
+	{
+		if ($attribute == 'upvote_voteTotal')
+		{
+			return craft()->upvote_query->tally($entry->id);
+		}
 	}
 
 }
