@@ -26,11 +26,6 @@ class UpvotePlugin extends BasePlugin
 		return 'Allows users to upvote/downvote or "like", any type of element.';
 	}
 
-	public function getDocumentationUrl()
-	{
-		return 'https://craftpl.us/plugins/upvote';
-	}
-
 	public function getVersion()
 	{
 		return '1.2.3 rc 2';
@@ -48,8 +43,12 @@ class UpvotePlugin extends BasePlugin
 
 	public function getDeveloperUrl()
 	{
-		return 'https://craftpl.us/plugins/upvote';
-		//return 'http://doublesecretagency.com';
+		return 'https://www.doublesecretagency.com/plugins';
+	}
+
+	public function getDocumentationUrl()
+	{
+		return 'https://www.doublesecretagency.com/plugins/upvote/docs';
 	}
 
 	public function getSettingsHtml()
