@@ -52,4 +52,46 @@ class UpvoteService extends BaseApplicationComponent
 	}
 	*/
 
+	// ========================================================================= //
+
+	/**
+	 * Fires an 'onBeforeVote' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeVote(Event $event)
+	{
+		$this->raiseEvent('onBeforeVote', $event);
+	}
+
+	/**
+	 * Fires an 'onVote' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onVote(Event $event)
+	{
+		$this->raiseEvent('onVote', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeUnvote' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeUnvote(Event $event)
+	{
+		$this->raiseEvent('onBeforeUnvote', $event);
+	}
+
+	/**
+	 * Fires an 'onUnvote' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onUnvote(Event $event)
+	{
+		$this->raiseEvent('onUnvote', $event);
+	}
+
 }

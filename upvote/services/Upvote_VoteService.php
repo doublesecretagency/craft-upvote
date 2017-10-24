@@ -39,9 +39,20 @@ class Upvote_VoteService extends BaseApplicationComponent
 		}
 	}
 
+	// ========================================================================= //
+
 	//
 	public function castVote($elementId, $key, $vote)
 	{
+		// Prep return data
+		$returnData = array(
+			'id'   => $elementId,
+			'key'  => $key,
+			'vote' => $vote,
+		);
+
+		// Fire an 'onBeforeVote' event
+		craft()->upvote->onBeforeVote(new Event($this, $returnData));
 
 		// If login is required
 		if (craft()->upvote->settings['requireLogin']) {
@@ -60,13 +71,53 @@ class Upvote_VoteService extends BaseApplicationComponent
 		$this->_updateElementTally($elementId, $key, $vote);
 		$this->_updateVoteLog($elementId, $key, $vote);
 
-		return array(
-			'id'   => $elementId,
-			'key'  => $key,
-			'vote' => $vote,
-		);
+		// Fire an 'onVote' event
+		craft()->upvote->onVote(new Event($this, $returnData));
+
+		return $returnData;
 
 	}
+
+	//
+	public function removeVote($elementId, $key)
+	{
+		// Prep return data
+		$returnData = array(
+			'id'  => $elementId,
+			'key' => $key,
+		);
+
+		// Fire an 'onBeforeUnvote' event
+		craft()->upvote->onBeforeUnvote(new Event($this, $returnData));
+
+		//
+		// FLAW:
+		// It's impossible to know the value of $originalVote before killing cookie/DB.
+		// Therefore, $antivote can't be contained in the 'onBeforeUnvote' event.
+		//
+
+		$originalVote = false;
+
+		$this->_removeVoteFromCookie($elementId, $key, $originalVote);
+		$this->_removeVoteFromDb($elementId, $key, $originalVote);
+
+		if ($originalVote) {
+			$antivote = (-1 * $originalVote);
+			$returnData['antivote'] = $antivote;
+			$this->_updateElementTally($elementId, $key, $antivote);
+			$this->_updateVoteLog($elementId, $key, $antivote, true);
+
+			// Fire an 'onUnvote' event
+			craft()->upvote->onUnvote(new Event($this, $returnData));
+
+			return $returnData;
+		} else {
+			return 'Unable to remove vote.';
+		}
+
+	}
+
+	// ========================================================================= //
 
 	//
 	private function _updateUserHistoryDatabase($elementId, $key, $vote)
@@ -158,29 +209,6 @@ class Upvote_VoteService extends BaseApplicationComponent
 			$record->wasUnvote = (int) $unvote;
 			$record->save();
 		}
-	}
-
-	//
-	public function removeVote($elementId, $key)
-	{
-		$originalVote = false;
-
-		$this->_removeVoteFromCookie($elementId, $key, $originalVote);
-		$this->_removeVoteFromDb($elementId, $key, $originalVote);
-
-		if ($originalVote) {
-			$antivote = (-1 * $originalVote);
-			$this->_updateElementTally($elementId, $key, $antivote);
-			$this->_updateVoteLog($elementId, $key, $antivote, true);
-			return array(
-				'id'       => $elementId,
-				'key'      => $key,
-				'antivote' => $antivote,
-			);
-		} else {
-			return 'Unable to remove vote.';
-		}
-
 	}
 
 	//
