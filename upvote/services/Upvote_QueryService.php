@@ -7,47 +7,48 @@ class Upvote_QueryService extends BaseApplicationComponent
 	//
 	public function tally($elementId, $key = null)
 	{
-		$record = Upvote_ElementTallyRecord::model()->findByAttributes(array(
+		$record = Upvote_ElementTotalRecord::model()->findByAttributes(array(
 			'elementId' => $elementId,
 			'voteKey'   => $key,
 		));
-		return ($record ? $record->tally : 0);
+		if ($record) {
+			$subtotal = ($record->upvoteTotal - $record->downvoteTotal);
+			return ($subtotal + $record->legacyTotal);
+		} else {
+			return 0;
+		}
 	}
 
 	// ========================================================================
 
-
-	// NEEDS A MIGRATION TO CREATE THESE COLUMNS
-	// ALSO NEEDS A SERVICE TO STORE THOSE VALUES
-
 	//
 	public function totalUpvotes($elementId, $key)
 	{
-		$record = Upvote_ElementTallyRecord::model()->findByAttributes(array(
+		$record = Upvote_ElementTotalRecord::model()->findByAttributes(array(
 			'elementId' => $elementId,
 			'voteKey'   => $key,
 		));
-		return ($record ? $record->totalUpvotes : 0);
+		return ($record ? $record->upvoteTotal : 0);
 	}
 
 	//
 	public function totalDownvotes($elementId, $key)
 	{
-		$record = Upvote_ElementTallyRecord::model()->findByAttributes(array(
+		$record = Upvote_ElementTotalRecord::model()->findByAttributes(array(
 			'elementId' => $elementId,
 			'voteKey'   => $key,
 		));
-		return ($record ? $record->totalDownvotes : 0);
+		return ($record ? $record->downvoteTotal : 0);
 	}
 
 	//
 	public function totalVotes($elementId, $key)
 	{
-		$record = Upvote_ElementTallyRecord::model()->findByAttributes(array(
+		$record = Upvote_ElementTotalRecord::model()->findByAttributes(array(
 			'elementId' => $elementId,
 			'voteKey'   => $key,
 		));
-		return ($record ? $record->totalVotes : 0);
+		return ($record ? ($record->upvoteTotal + $record->downvoteTotal) : 0);
 	}
 
 	// ========================================================================

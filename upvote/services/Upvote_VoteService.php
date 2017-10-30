@@ -68,7 +68,7 @@ class Upvote_VoteService extends BaseApplicationComponent
 		}
 
 		// Update element tally
-		$this->_updateElementTally($elementId, $key, $vote);
+		$this->_updateElementTotals($elementId, $key, $vote);
 		$this->_updateVoteLog($elementId, $key, $vote);
 
 		// Fire an 'onVote' event
@@ -104,7 +104,7 @@ class Upvote_VoteService extends BaseApplicationComponent
 		if ($originalVote) {
 			$antivote = (-1 * $originalVote);
 			$returnData['antivote'] = $antivote;
-			$this->_updateElementTally($elementId, $key, $antivote);
+			$this->_updateElementTotals($elementId, $key, $antivote, true);
 			$this->_updateVoteLog($elementId, $key, $antivote, true);
 
 			// Fire an 'onUnvote' event
@@ -175,22 +175,56 @@ class Upvote_VoteService extends BaseApplicationComponent
 	}
 
 	//
-	private function _updateElementTally($elementId, $key, $vote)
+	private function _updateElementTotals($elementId, $key, $vote, $antivote = false)
 	{
-		// Load existing element tally
-		$record = Upvote_ElementTallyRecord::model()->findByAttributes(array(
+		// Load existing element totals
+		$record = Upvote_ElementTotalRecord::model()->findByAttributes(array(
 			'elementId' => $elementId,
 			'voteKey'   => $key,
 		));
-		// If no tally exists, create new
+		// If no totals record exists, create new
 		if (!$record) {
-			$record = new Upvote_ElementTallyRecord;
-			$record->elementId = $elementId;
-			$record->voteKey   = $key;
-			$record->tally     = 0;
+			$record = new Upvote_ElementTotalRecord;
+			$record->elementId     = $elementId;
+			$record->voteKey       = $key;
+			$record->upvoteTotal   = 0;
+			$record->downvoteTotal = 0;
 		}
-		// Register vote
-		$record->tally += $vote;
+		// If vote is being removed
+		if ($antivote) {
+			// Vote direction
+			$antiUpvote   = (-1 == $vote);
+			$antiDownvote = ( 1 == $vote);
+			// Whether to remove a legacy vote
+			$removeLegacyUpvote   = ($antiUpvote   && $record->legacyTotal > 0);
+			$removeLegacyDownvote = ($antiDownvote && $record->legacyTotal < 0);
+			// If removing legacy vote
+			if ($removeLegacyUpvote) {
+				$record->legacyTotal--;
+			} else if ($removeLegacyDownvote) {
+				$record->legacyTotal++;
+			} else {
+				// Register unvote (default behavior)
+				switch ($vote) {
+					case  1:
+						$record->downvoteTotal--;
+						break;
+					case -1:
+						$record->upvoteTotal--;
+						break;
+				}
+			}
+		} else {
+			// Register vote
+			switch ($vote) {
+				case  1:
+					$record->upvoteTotal++;
+					break;
+				case -1:
+					$record->downvoteTotal++;
+					break;
+			}
+		}
 		// Save
 		return $record->save();
 	}
