@@ -47,7 +47,6 @@ class UpvoteVariable
 			UpvotePlugin::log('Invalid element ID');
 			return 0;
 		}
-
 		return craft()->upvote_query->totalUpvotes($elementId, $key);
 	}
 
@@ -59,7 +58,6 @@ class UpvoteVariable
 			UpvotePlugin::log('Invalid element ID');
 			return 0;
 		}
-
 		return craft()->upvote_query->totalDownvotes($elementId, $key);
 	}
 
@@ -71,7 +69,6 @@ class UpvoteVariable
 			UpvotePlugin::log('Invalid element ID');
 			return 0;
 		}
-
 		return craft()->upvote_query->totalVotes($elementId, $key);
 	}
 
