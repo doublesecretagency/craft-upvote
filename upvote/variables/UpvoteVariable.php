@@ -39,6 +39,17 @@ class UpvoteVariable
 
 	// ========================================================================
 
+	// Output total votes of element
+	public function totalVotes($elementId, $key = null)
+	{
+		// If element ID is invalid, log error
+		if (!$elementId || !is_numeric($elementId)) {
+			UpvotePlugin::log('Invalid element ID');
+			return 0;
+		}
+		return craft()->upvote_query->totalVotes($elementId, $key);
+	}
+
 	// Output total upvotes of element
 	public function totalUpvotes($elementId, $key = null)
 	{
@@ -59,17 +70,6 @@ class UpvoteVariable
 			return 0;
 		}
 		return craft()->upvote_query->totalDownvotes($elementId, $key);
-	}
-
-	// Output total votes of element
-	public function totalVotes($elementId, $key = null)
-	{
-		// If element ID is invalid, log error
-		if (!$elementId || !is_numeric($elementId)) {
-			UpvotePlugin::log('Invalid element ID');
-			return 0;
-		}
-		return craft()->upvote_query->totalVotes($elementId, $key);
 	}
 
 	// ========================================================================
@@ -213,6 +213,14 @@ window.csrfTokenValue = "'.craft()->request->getCsrfToken().'";
 		} else {
 			return false;
 		}
+	}
+
+	// ========================================================================
+
+	// Whether the plugin contains legacy data
+	public function hasLegacyData()
+	{
+		return craft()->upvote->hasLegacyData();
 	}
 
 }

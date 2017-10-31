@@ -94,4 +94,12 @@ class UpvoteService extends BaseApplicationComponent
 		$this->raiseEvent('onUnvote', $event);
 	}
 
+	// ========================================================================= //
+
+	// Does the plugin contain legacy data?
+	public function hasLegacyData()
+	{
+		return (bool) Upvote_ElementTotalRecord::model()->countByAttributes(array(), 'legacyTotal <> 0');
+	}
+
 }

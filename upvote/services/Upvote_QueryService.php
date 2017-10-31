@@ -22,6 +22,16 @@ class Upvote_QueryService extends BaseApplicationComponent
 	// ========================================================================
 
 	//
+	public function totalVotes($elementId, $key = null)
+	{
+		$record = Upvote_ElementTotalRecord::model()->findByAttributes(array(
+			'elementId' => $elementId,
+			'voteKey'   => $key,
+		));
+		return ($record ? ($record->upvoteTotal + $record->downvoteTotal) : 0);
+	}
+
+	//
 	public function totalUpvotes($elementId, $key = null)
 	{
 		$record = Upvote_ElementTotalRecord::model()->findByAttributes(array(
@@ -39,16 +49,6 @@ class Upvote_QueryService extends BaseApplicationComponent
 			'voteKey'   => $key,
 		));
 		return ($record ? $record->downvoteTotal : 0);
-	}
-
-	//
-	public function totalVotes($elementId, $key = null)
-	{
-		$record = Upvote_ElementTotalRecord::model()->findByAttributes(array(
-			'elementId' => $elementId,
-			'voteKey'   => $key,
-		));
-		return ($record ? ($record->upvoteTotal + $record->downvoteTotal) : 0);
 	}
 
 	// ========================================================================
