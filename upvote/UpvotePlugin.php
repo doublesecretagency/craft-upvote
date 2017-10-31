@@ -79,15 +79,28 @@ class UpvotePlugin extends BasePlugin
 	public function defineAdditionalEntryTableAttributes()
 	{
 		return array(
-			'upvote_voteTotal' => "Vote Total",
+			'upvote_voteTally'      => "Vote Tally",
+			'upvote_totalVotes'     => "Total Votes",
+			'upvote_totalUpvotes'   => "Total Upvotes",
+			'upvote_totalDownvotes' => "Total Downvotes",
 		);
 	}
 
 	public function getEntryTableAttributeHtml(EntryModel $entry, $attribute)
 	{
-		if ($attribute == 'upvote_voteTotal')
-		{
-			return craft()->upvote_query->tally($entry->id);
+		switch ($attribute) {
+			case 'upvote_voteTally':
+				return craft()->upvote_query->tally($entry->id);
+				break;
+			case 'upvote_totalVotes':
+				return craft()->upvote_query->totalVotes($entry->id);
+				break;
+			case 'upvote_totalUpvotes':
+				return craft()->upvote_query->totalUpvotes($entry->id);
+				break;
+			case 'upvote_totalDownvotes':
+				return craft()->upvote_query->totalDownvotes($entry->id);
+				break;
 		}
 	}
 

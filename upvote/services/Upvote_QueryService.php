@@ -22,7 +22,7 @@ class Upvote_QueryService extends BaseApplicationComponent
 	// ========================================================================
 
 	//
-	public function totalUpvotes($elementId, $key)
+	public function totalUpvotes($elementId, $key = null)
 	{
 		$record = Upvote_ElementTotalRecord::model()->findByAttributes(array(
 			'elementId' => $elementId,
@@ -32,7 +32,7 @@ class Upvote_QueryService extends BaseApplicationComponent
 	}
 
 	//
-	public function totalDownvotes($elementId, $key)
+	public function totalDownvotes($elementId, $key = null)
 	{
 		$record = Upvote_ElementTotalRecord::model()->findByAttributes(array(
 			'elementId' => $elementId,
@@ -42,7 +42,7 @@ class Upvote_QueryService extends BaseApplicationComponent
 	}
 
 	//
-	public function totalVotes($elementId, $key)
+	public function totalVotes($elementId, $key = null)
 	{
 		$record = Upvote_ElementTotalRecord::model()->findByAttributes(array(
 			'elementId' => $elementId,
