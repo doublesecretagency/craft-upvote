@@ -28,7 +28,7 @@ class UpvotePlugin extends BasePlugin
 
 	public function getVersion()
 	{
-		return '1.3.0';
+		return '1.3.1';
 	}
 
 	public function getSchemaVersion()
