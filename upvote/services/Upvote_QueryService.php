@@ -89,16 +89,16 @@ class Upvote_QueryService extends BaseApplicationComponent
 		if (!craft()->upvote->validKey($key)) {
 			return false;
 		} else if (null === $key) {
-			$conditions = 'tallies.voteKey IS NULL';
+			$conditions = 'totals.voteKey IS NULL';
 		} else {
-			$conditions = 'tallies.voteKey = :key';
+			$conditions = 'totals.voteKey = :key';
 		}
 		// Join with elements table to sort by tally
 		$query = craft()->db->createCommand()
 			->select('elements.id')
 			->from('elements elements')
-			->leftJoin('upvote_elementtallies tallies', 'elements.id = tallies.elementId AND '.$conditions, array(':key' => $key))
-			->order('IFNULL(tallies.tally, 0) DESC, elements.id DESC')
+			->leftJoin('upvote_elementtotals totals', 'elements.id = totals.elementId AND '.$conditions, array(':key' => $key))
+			->order('IFNULL(totals.legacyTotal, 0) DESC, elements.id DESC')
 		;
 		// Return elementIds
 		$elementIds = $query->queryColumn();
