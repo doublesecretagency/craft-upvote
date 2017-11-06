@@ -10,7 +10,7 @@ upvote.removeVote = function (elementId, key) {
 	data[window.csrfTokenName] = window.csrfTokenValue; // Append CSRF Token
 	// Cast vote
 	ajax
-		.post('/actions/upvote/remove')
+		.post('/'+this.actionTrigger+'/upvote/remove')
 		.send(data)
 		.type('form')
 		.set('X-Requested-With','XMLHttpRequest')

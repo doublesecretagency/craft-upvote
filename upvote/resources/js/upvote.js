@@ -3,6 +3,8 @@ var ajax = window.superagent;
 
 // Upvote JS object
 var upvote = {
+	// Default action trigger
+	actionTrigger: 'actions',
 	// Cast an upvote
 	upvote: function (elementId, key) {
 		if (this.devMode) {
@@ -49,10 +51,10 @@ var upvote = {
 			// If opposite vote has already been cast
 			if (oppositeMatch) {
 				// Swap vote
-				var action = '/actions/upvote/swap';
+				var action = '/'+this.actionTrigger+'/upvote/swap';
 			} else {
 				// Cast new vote
-				var action = '/actions/upvote/'+vote;
+				var action = '/'+this.actionTrigger+'/upvote/'+vote;
 			}
 			// Vote via AJAX
 			ajax

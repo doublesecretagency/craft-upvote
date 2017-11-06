@@ -170,6 +170,9 @@ class UpvoteVariable
 				craft()->templates->includeJs('upvote.devMode = true;');
 			}
 
+			// Action trigger
+			craft()->templates->includeJs('upvote.actionTrigger = "'.craft()->config->get('actionTrigger').'";');
+
 			// CSRF
 			if (craft()->config->get('enableCsrfProtection') === true) {
 				if (!craft()->upvote->csrfIncluded) {
