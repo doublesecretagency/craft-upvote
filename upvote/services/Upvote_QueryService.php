@@ -93,12 +93,16 @@ class Upvote_QueryService extends BaseApplicationComponent
 		} else {
 			$conditions = 'totals.voteKey = :key';
 		}
+		// Construct order SQL
+		$subtotal = 'IFNULL(totals.upvoteTotal, 0) - IFNULL(totals.downvoteTotal, 0)';
+		$legacy   = 'IFNULL(totals.legacyTotal, 0)';
+		$order    = "($subtotal + $legacy) DESC";
 		// Join with elements table to sort by tally
 		$query = craft()->db->createCommand()
 			->select('elements.id')
 			->from('elements elements')
 			->leftJoin('upvote_elementtotals totals', 'elements.id = totals.elementId AND '.$conditions, array(':key' => $key))
-			->order('IFNULL(totals.legacyTotal, 0) DESC, elements.id DESC')
+			->order($order.', elements.id DESC') // Order by grand tally (or newest first)
 		;
 		// Return elementIds
 		$elementIds = $query->queryColumn();
