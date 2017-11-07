@@ -3,8 +3,8 @@ var ajax = window.superagent;
 
 // Upvote JS object
 var upvote = {
-	// Default action trigger
-	actionTrigger: 'actions',
+	// Default action url
+	actionUrl: '/index.php/actions/',
 	// Cast an upvote
 	upvote: function (elementId, key) {
 		if (this.devMode) {
