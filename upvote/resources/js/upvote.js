@@ -51,10 +51,10 @@ var upvote = {
 			// If opposite vote has already been cast
 			if (oppositeMatch) {
 				// Swap vote
-				var action = '/'+this.actionTrigger+'/upvote/swap';
+				var action = this.actionUrl+'upvote/swap';
 			} else {
 				// Cast new vote
-				var action = '/'+this.actionTrigger+'/upvote/'+vote;
+				var action = this.actionUrl+'upvote/'+vote;
 			}
 			// Vote via AJAX
 			ajax

@@ -171,7 +171,7 @@ class UpvoteVariable
 			}
 
 			// Action trigger
-			craft()->templates->includeJs('upvote.actionTrigger = "'.craft()->config->get('actionTrigger').'";');
+			craft()->templates->includeJs('upvote.actionUrl = "'.UrlHelper::getActionUrl().'/";');
 
 			// CSRF
 			if (craft()->config->get('enableCsrfProtection') === true) {
