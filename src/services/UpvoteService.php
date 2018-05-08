@@ -39,6 +39,11 @@ class UpvoteService extends Component
     // Get history of logged-in user
     public function getUserHistory()
     {
+        // If table has not been created yet, bail
+        if (!Craft::$app->getDb()->tableExists('{{%upvote_userhistories}}')) {
+            return false;
+        }
+
         // Get current user
         $currentUser = Craft::$app->user->getIdentity();
 
