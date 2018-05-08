@@ -1,0 +1,40 @@
+{
+    "name": "doublesecretagency/craft-upvote",
+    "description": "Lets your users upvote/downvote, \"like\", or favorite any type of element.",
+    "type": "craft-plugin",
+    "version": "2.0.0",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "upvote",
+        "like",
+        "favorite"
+    ],
+    "support": {
+        "docs": "https://www.doublesecretagency.com/plugins/upvote/docs",
+        "issues": "https://github.com/doublesecretagency/craft-upvote/issues"
+    },
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Double Secret Agency",
+            "homepage": "https://www.doublesecretagency.com/plugins"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "^3.0",
+        "fortawesome/font-awesome": "4.7.0"
+    },
+    "autoload": {
+        "psr-4": {
+          "doublesecretagency\\upvote\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Upvote",
+        "handle": "upvote",
+        "class": "doublesecretagency\\upvote\\Upvote"
+    }
+}
