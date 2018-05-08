@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.1 - 2018-05-08
+
+### Fixed
+- Fixed "table does not exist" error when installing.
+
 ## 2.0.0 - 2018-05-08
 
 ### Added
