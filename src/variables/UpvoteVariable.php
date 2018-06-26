@@ -37,6 +37,9 @@ class UpvoteVariable
     //
     public function userHistory($userId = null)
     {
+        // Ensure the user ID is valid (defaults to current user)
+        Upvote::$plugin->upvote->validateUserId($userId);
+
         return Upvote::$plugin->upvote_query->userHistory($userId);
     }
 
