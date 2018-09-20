@@ -29,4 +29,7 @@ class VoteEvent extends Event
     /** @var int|null The value of the vote. */
     public $vote;
 
+    /** @var int|null ID of user who voted (null if anonymous). */
+    public $userId;
+
 }

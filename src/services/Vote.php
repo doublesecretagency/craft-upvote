@@ -69,16 +69,20 @@ class Vote extends Component
     // ========================================================================= //
 
     //
-    public function castVote($elementId, $key, $vote)
+    public function castVote($elementId, $key, $vote, $userId = null)
     {
         // Get settings
         $settings = Upvote::$plugin->getSettings();
 
+        // Ensure the user ID is valid
+        Upvote::$plugin->upvote->validateUserId($userId);
+
         // Prep return data
         $returnData = [
-            'id'   => $elementId,
-            'key'  => $key,
-            'vote' => $vote,
+            'id'     => $elementId,
+            'key'    => $key,
+            'vote'   => $vote,
+            'userId' => $userId,
         ];
 
         // Trigger event before a vote is cast
@@ -89,7 +93,7 @@ class Vote extends Component
         // If login is required
         if ($settings->requireLogin) {
             // Update user history
-            if (!$this->_updateUserHistoryDatabase($elementId, $key, $vote)) {
+            if (!$this->_updateUserHistoryDatabase($elementId, $key, $vote, $userId)) {
                 return $this->alreadyVoted;
             }
         } else {
@@ -101,25 +105,29 @@ class Vote extends Component
 
         // Update element tally
         $this->_updateElementTotals($elementId, $key, $vote);
-        $this->_updateVoteLog($elementId, $key, $vote);
+        $this->_updateVoteLog($elementId, $key, $vote, $userId);
 
         // Trigger event after a vote is cast
         if (Event::hasHandlers(Upvote::class, Upvote::EVENT_AFTER_VOTE)) {
             Event::trigger(Upvote::class, Upvote::EVENT_AFTER_VOTE, new VoteEvent($returnData));
         }
 
+        // Return data
         return $returnData;
-
     }
 
     //
-    public function removeVote($elementId, $key)
+    public function removeVote($elementId, $key, $userId = null)
     {
+        // Ensure the user ID is valid
+        Upvote::$plugin->upvote->validateUserId($userId);
+
         // Prep return data
         $returnData = [
             'id'       => $elementId,
             'key'      => $key,
             'antivote' => null,
+            'userId'   => $userId,
         ];
 
         // Trigger event before a vote is removed
@@ -136,7 +144,7 @@ class Vote extends Component
         $originalVote = false;
 
         $this->_removeVoteFromCookie($elementId, $key, $originalVote);
-        $this->_removeVoteFromDb($elementId, $key, $originalVote);
+        $this->_removeVoteFromDb($elementId, $key, $originalVote, $userId);
 
         if (!$originalVote) {
             return 'Unable to remove vote.';
@@ -145,32 +153,29 @@ class Vote extends Component
         $antivote = (-1 * $originalVote);
         $returnData['antivote'] = $antivote;
         $this->_updateElementTotals($elementId, $key, $antivote, true);
-        $this->_updateVoteLog($elementId, $key, $antivote, true);
+        $this->_updateVoteLog($elementId, $key, $antivote, $userId, true);
 
         // Trigger event after a vote is removed
         if (Event::hasHandlers(Upvote::class, Upvote::EVENT_AFTER_UNVOTE)) {
             Event::trigger(Upvote::class, Upvote::EVENT_AFTER_UNVOTE, new UnvoteEvent($returnData));
         }
 
+        // Return data
         return $returnData;
-
     }
 
     // ========================================================================= //
 
     //
-    private function _updateUserHistoryDatabase($elementId, $key, $vote)
+    private function _updateUserHistoryDatabase($elementId, $key, $vote, $userId)
     {
-        $currentUser = Craft::$app->user->getIdentity();
-
         // If user is not logged in, return false
-        if (!$currentUser) {
+        if (!$userId) {
             return false;
         }
-
         // Load existing element history
         $record = UserHistory::findOne([
-            'id' => $currentUser->id,
+            'id' => $userId,
         ]);
 
         // Get item key
@@ -179,10 +184,14 @@ class Vote extends Component
         // If record already exists
         if ($record) {
             $history = json_decode($record->history, true);
+            // If user has already voted on element, bail
+            if (array_key_exists($item, $history)) {
+                return false;
+            }
         } else {
             // Create new record if necessary
             $record = new UserHistory;
-            $record->id = $currentUser->id;
+            $record->id = $userId;
             $history = [];
         }
 
@@ -280,7 +289,7 @@ class Vote extends Component
     }
 
     //
-    private function _updateVoteLog($elementId, $key, $vote, $unvote = false)
+    private function _updateVoteLog($elementId, $key, $vote, $userId, $unvote = false)
     {
         // If not keeping a vote log, bail
         if (!Upvote::$plugin->getSettings()->keepVoteLog) {
@@ -288,11 +297,10 @@ class Vote extends Component
         }
 
         // Log vote
-        $currentUser = Craft::$app->user->getIdentity();
         $record = new VoteLog;
         $record->elementId = $elementId;
         $record->voteKey   = $key;
-        $record->userId    = ($currentUser ? $currentUser->id : null);
+        $record->userId    = $userId;
         $record->ipAddress = $_SERVER['REMOTE_ADDR'];
         $record->voteValue = $vote;
         $record->wasUnvote = (int) $unvote;
@@ -327,18 +335,16 @@ class Vote extends Component
     }
 
     //
-    private function _removeVoteFromDb($elementId, $key, &$originalVote)
+    private function _removeVoteFromDb($elementId, $key, &$originalVote, $userId)
     {
-        $currentUser = Craft::$app->user->getIdentity();
-
-        // If no current user, bail
-        if (!$currentUser) {
+        // If no user ID, bail
+        if (!$userId) {
             return false;
         }
 
         // Get user history
         $record = UserHistory::findOne([
-            'id' => $currentUser->id,
+            'id' => $userId,
         ]);
 
         // If no user history, bail

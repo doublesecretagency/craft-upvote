@@ -29,4 +29,7 @@ class UnvoteEvent extends Event
     /** @var int|null The opposing vote value. */
     public $antivote;
 
+    /** @var int|null ID of user who voted (null if anonymous). */
+    public $userId;
+
 }
