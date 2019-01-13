@@ -64,6 +64,7 @@
     checked: settings.keepVoteLog,
     disabled: 'keepVoteLog' in overrideKeys
 }) }}
+{{ 'keepVoteLog' in overrideKeys ? configWarning('keepVoteLog') }}
 <p>Generally unnecessary... The detailed log is not used to calculate the tally for each element.</p>
 <ul>
     <li><strong>PRO:</strong> You have a detailed log of every vote cast, which can then be accessed by another plugin via the <code>Upvote_VoteLogRecord</code> class.</li>
