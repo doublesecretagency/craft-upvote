@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.4 - 2019-09-24
+
+### Added
+- Added ability to vote on behalf of a specific user.
+- Allow override of `keepVoteLog`.
+
+### Fixed
+- Ensure plugins have been loaded before running `init`.
+
 ## 2.0.3 - 2018-07-01
 
 ### Fixed
