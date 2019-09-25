@@ -18,6 +18,7 @@ use craft\base\Element;
 use craft\base\Plugin;
 use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\SetElementTableAttributeHtmlEvent;
+use craft\services\Plugins;
 use craft\web\twig\variables\CraftVariable;
 
 use doublesecretagency\upvote\models\Settings;
@@ -75,9 +76,26 @@ class Upvote extends Plugin
         $this->upvote->getAnonymousHistory();
 
         // Load logged-in user history (if relevant)
-        if (Craft::$app->user->getIdentity()) {
-            $this->upvote->getUserHistory();
-        }
+        Event::on(
+            Plugins::class,
+            Plugins::EVENT_AFTER_LOAD_PLUGINS,
+            function () {
+
+                // If no current user
+                if (!Craft::$app->user->getIdentity()) {
+                    return;
+                }
+
+                // If control panel, bail
+                if (Craft::$app->getRequest()->getIsCpRequest()) {
+                    return;
+                }
+
+                // Load user history
+                $this->upvote->getUserHistory();
+
+            }
+        );
 
         // Register variables
         Event::on(
