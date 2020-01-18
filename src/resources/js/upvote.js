@@ -5,6 +5,8 @@ var ajax = window.superagent;
 var upvote = {
     // Default action url
     actionUrl: '/actions/',
+    // No CSRF token by default
+    csrfToken: false,
     // Cast an upvote
     upvote: function (elementId, key) {
         if (this.devMode) {
@@ -23,68 +25,100 @@ var upvote = {
     removeVote: function () {
         console.log('Vote removal is disabled.');
     },
+    // Submit AJAX with fresh CSRF token
+    _csrf: function (callback) {
+        // Make object available to callback
+        var that = this;
+        // Fetch a new CSRF token
+        ajax
+            .get(this.actionUrl+'upvote/csrf')
+            .end(function(err, res){
+                // If something went wrong, bail
+                if (!res.ok) {
+                    console.log('Error retrieving CSRF token:', err);
+                    return;
+                }
+                // Set global CSRF token
+                that.csrfToken = res.body;
+                // Run callback
+                callback();
+            })
+        ;
+    },
     // Cast vote
     _vote: function (elementId, key, vote) {
-        // Set vote icons
-        var voteIcons = Sizzle('.upvote-'+vote+'-'+this._setItemKey(elementId, key));
-        var voteMatch = this._determineMatch(voteIcons);
-        // Set data
-        var data = {
-            'id': elementId,
-            'key': key
-        };
-        data[window.csrfTokenName] = window.csrfTokenValue; // Append CSRF Token
-        // If matching vote has not been cast
-        if (!voteMatch) {
+        // Make object available to callback
+        var that = this;
+        // Callback function for casting a vote
+        var castVote = function () {
+            // Initialize data with CSRF token
+            var data = JSON.parse(JSON.stringify(that.csrfToken));
+            // Set data
+            data['id'] = elementId;
+            data['key'] = key;
+            // Set vote icons
+            var voteIcons = Sizzle('.upvote-'+vote+'-'+that._setItemKey(elementId, key));
+            var voteMatch = that._determineMatch(voteIcons);
+            // If matching vote has not been cast
+            if (!voteMatch) {
 
-            // TODO: If downvoting is disabled, "opposites" are irrelevant
+                // TODO: If downvoting is disabled, "opposites" are irrelevant
 
-            // Define opposite
-            var opposite;
-            switch (vote) {
-                case 'upvote': opposite = 'downvote'; break;
-                case 'downvote': opposite = 'upvote'; break;
-            }
-            // Set opposite icons
-            var oppositeIcons = Sizzle('.upvote-'+opposite+'-'+this._setItemKey(elementId, key));
-            var oppositeMatch = this._determineMatch(oppositeIcons);
-            // If opposite vote has already been cast
-            if (oppositeMatch) {
-                // Swap vote
-                var action = this.actionUrl+'upvote/vote/swap';
-            } else {
-                // Cast new vote
-                var action = this.actionUrl+'upvote/vote/'+vote;
-            }
-            // Vote via AJAX
-            ajax
-                .post(action)
-                .send(data)
-                .type('form')
-                .set('X-Requested-With','XMLHttpRequest')
-                .end(function (response) {
-                    var results = JSON.parse(response.text);
-                    if (upvote.devMode) {
-                        console.log('['+elementId+']'+(key ? ' ['+key+']' : '')+' Successfully cast '+vote);
-                        console.log(results);
-                    }
-                    var errorReturned = (typeof results === 'string' || results instanceof String);
-                    // If no error message was returned
-                    if (!errorReturned) {
-                        // If swapping vote
-                        if (oppositeMatch) {
-                            results.vote = results.vote * 2;
-                            upvote._removeMatchClass(oppositeIcons);
+                // Define opposite
+                var opposite;
+                switch (vote) {
+                    case 'upvote': opposite = 'downvote'; break;
+                    case 'downvote': opposite = 'upvote'; break;
+                }
+                // Set opposite icons
+                var oppositeIcons = Sizzle('.upvote-'+opposite+'-'+that._setItemKey(elementId, key));
+                var oppositeMatch = that._determineMatch(oppositeIcons);
+                // If opposite vote has already been cast
+                if (oppositeMatch) {
+                    // Swap vote
+                    var action = that.actionUrl+'upvote/vote/swap';
+                } else {
+                    // Cast new vote
+                    var action = that.actionUrl+'upvote/vote/'+vote;
+                }
+                // Vote via AJAX
+                ajax
+                    .post(action)
+                    .send(data)
+                    .type('form')
+                    .set('X-Requested-With','XMLHttpRequest')
+                    .end(function (response) {
+                        var results = JSON.parse(response.text);
+                        if (upvote.devMode) {
+                            console.log('['+elementId+']'+(key ? ' ['+key+']' : '')+' Successfully cast '+vote);
+                            console.log(results);
                         }
-                        // Update tally & add class
-                        upvote._updateTally(elementId, key, results.vote);
-                        upvote._addMatchClass(voteIcons);
-                    }
-                })
-            ;
+                        var errorReturned = (typeof results === 'string' || results instanceof String);
+                        // If no error message was returned
+                        if (!errorReturned) {
+                            // If swapping vote
+                            if (oppositeMatch) {
+                                results.vote = results.vote * 2;
+                                upvote._removeMatchClass(oppositeIcons);
+                            }
+                            // Update tally & add class
+                            upvote._updateTally(elementId, key, results.vote);
+                            upvote._addMatchClass(voteIcons);
+                        }
+                    })
+                ;
+            } else {
+                // Unvote
+                upvote.removeVote(elementId, key);
+            }
+        };
+        // If token already exists
+        if (this.csrfToken) {
+            // Cast vote using existing token
+            castVote();
         } else {
-            // Unvote
-            upvote.removeVote(elementId, key);
+            // Cast vote using a fresh token
+            this._csrf(castVote);
         }
     },
     // Update tally
