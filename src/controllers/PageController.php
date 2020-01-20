@@ -33,6 +33,20 @@ class PageController extends Controller
     protected $allowAnonymous = true;
 
     /**
+     * Check the preload config setting.
+     *
+     * @return Response
+     */
+    public function actionPreload(): Response
+    {
+        // Get preload config setting
+        $preload = (bool) Upvote::$plugin->getSettings()->preload;
+
+        // Return whether or not preloading is enabled
+        return $this->asJson(['enabled' => $preload]);
+    }
+
+    /**
      * Generate a valid CSRF token & name.
      *
      * @return Response

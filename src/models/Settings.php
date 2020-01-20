@@ -20,19 +20,22 @@ use craft\base\Model;
 class Settings extends Model
 {
 
-    /** @var bool  $requireLogin  Whether a user is required to login to vote. */
+    /** @var bool $preload Whether to preload data into DOM elements. */
+    public $preload = true;
+
+    /** @var bool $requireLogin Whether a user is required to login to vote. */
     public $requireLogin = true;
 
-    /** @var bool  $allowDownvoting  Whether it's possible to downvote. */
+    /** @var bool $allowDownvoting Whether it's possible to downvote. */
     public $allowDownvoting = true;
 
-    /** @var bool  $allowVoteRemoval  Whether users are allowed to remove their vote. */
+    /** @var bool $allowVoteRemoval Whether users are allowed to remove their vote. */
     public $allowVoteRemoval = true;
 
-    /** @var bool  $allowFontAwesome  Whether to require Font Awesome resources. */
+    /** @var bool $allowFontAwesome Whether to require Font Awesome resources. */
     public $allowFontAwesome = true;
 
-    /** @var bool  $keepVoteLog  Whether to keep a detailed log of all votes. */
+    /** @var bool $keepVoteLog Whether to keep a detailed log of all votes. */
     public $keepVoteLog = false;
 
 }

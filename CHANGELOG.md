@@ -4,6 +4,7 @@
 
 ### Added
 - Cache-proof! Now works flawlessly with caching plugins or native Craft caching.
+- Added "Data Preloading" setting, which can be disabled to manually trigger page setup.
 
 ## 2.0.4 - 2019-09-24
 

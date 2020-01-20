@@ -55,6 +55,26 @@
 
 <hr/>
 
+<h2>Data Preloading</h2>
+
+{{ forms.checkbox({
+    label: "<strong>Preload voting data</strong>"|t,
+    id: 'preload',
+    name: 'preload',
+    checked: settings.preload,
+    disabled: 'preload' in overrideKeys
+}) }}
+{{ 'preload' in overrideKeys ? configWarning('preload') }}
+<p>If checked, all data (vote tallies, etc) will be automatically populated when a page is fully loaded. You can disable this if you'd like to load the data manually.</p>
+
+<p><strong>Manually load all voting data into a page via JavaScript...</strong></p>
+
+<pre class="pane"><code>upvote.pageSetup()</code></pre>
+
+<p>If the data is still not loading, check to ensure that you are not getting any JavaScript errors in the browser console. Even errors from outside of the plugin can prevent it from properly loading the data, if those errors occur before the Upvote JS has had a chance to run.</p>
+
+<hr/>
+
 <h2>Complete Vote Log</h2>
 
 {{ forms.checkbox({

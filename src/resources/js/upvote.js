@@ -27,9 +27,9 @@ window.upvote = {
             }
         }
         // Configure all elements on page
-        upvote.configure(ids);
+        this.configure(ids);
         // Mark setup as complete!
-        upvote.setupComplete = true;
+        this.setupComplete = true;
     },
     // Configure elements
     configure: function (ids) {
@@ -254,5 +254,39 @@ window.upvote = {
     }
 };
 
-// On page load, preload Upvote data
-addEventListener('load', upvote.pageSetup);
+// On page load, optionally preload Upvote data
+addEventListener('load', function () {
+    // Determine whether to preload data
+    var checkPreloadSetting = function () {
+        // Initialize data with CSRF token
+        var data = JSON.parse(JSON.stringify(upvote.csrfToken));
+        // Remove vote
+        ajax
+            .post(upvote.actionUrl+'upvote/page/preload')
+            .send(data)
+            .end(function (err, res) {
+                // If something went wrong, bail
+                if (!res.ok) {
+                    console.log('Could not determine whether Upvote should be preloaded:', err);
+                    return;
+                }
+                // Get response data
+                var data = res.body;
+                // If setting is not enabled, bail (successfully)
+                if (!data || !data.enabled) {
+                    return;
+                }
+                // Set up all Upvote elements on the page
+                upvote.pageSetup();
+            })
+        ;
+    };
+    // If token already exists
+    if (upvote.csrfToken) {
+        // Check whether to preload data using existing token
+        checkPreloadSetting();
+    } else {
+        // Check whether to preload data using a fresh token
+        upvote.getCsrf(checkPreloadSetting);
+    }
+});
