@@ -46,10 +46,16 @@ class UpvoteVariable
     //
     public function tally($elementId, $key = null)
     {
-        $genericClass = 'upvote-tally';
-        $uniqueClass  = 'upvote-tally-'.$elementId.($key ? '-'.$key : '');
-        $tally = Upvote::$plugin->upvote_query->tally($elementId, $key);
-        $span  = '<span class="'.$genericClass.' '.$uniqueClass.'">'.$tally.'</span>';
+        // Get Upvote service
+        $upvote = Upvote::$plugin->upvote;
+        // Set classes
+        $genericClass = 'upvote-el upvote-tally';
+        $uniqueClass  = 'upvote-tally-'.$upvote->setItemKey($elementId, $key, '-');
+        // Set data ID
+        $dataId = $upvote->setItemKey($elementId, $key);
+        // Compile HTML
+        $span = '<span data-id="'.$dataId.'" class="'.$genericClass.' '.$uniqueClass.'">&nbsp;</span>';
+        // Return HTML
         return Template::raw($span);
     }
 
@@ -106,36 +112,28 @@ class UpvoteVariable
     private function _renderIcon($elementId, $key = null, $vote)
     {
         $this->_includeCss();
-
+        // Get Upvote service
+        $upvote = Upvote::$plugin->upvote;
         // Establish basics
-        $genericClass = 'upvote-vote ';
+        $genericClass = 'upvote-el upvote-vote ';
         switch ($vote) {
             case Upvote::UPVOTE:
                 $icon = Upvote::$plugin->upvote_vote->upvoteIcon;
                 $js = $this->jsUpvote($elementId, $key);
                 $genericClass .= 'upvote-upvote';
-                $uniqueClass   = 'upvote-upvote-'.$elementId.($key ? '-'.$key : '');
+                $uniqueClass   = 'upvote-upvote-'.$upvote->setItemKey($elementId, $key, '-');
                 break;
             case Upvote::DOWNVOTE:
                 $icon = Upvote::$plugin->upvote_vote->downvoteIcon;
                 $js = $this->jsDownvote($elementId, $key);
                 $genericClass .= 'upvote-downvote';
-                $uniqueClass   = 'upvote-downvote-'.$elementId.($key ? '-'.$key : '');
+                $uniqueClass   = 'upvote-downvote-'.$upvote->setItemKey($elementId, $key, '-');
                 break;
         }
-        // Get user vote history
-        if (Upvote::$plugin->getSettings()->requireLogin) {
-            $history = Upvote::$plugin->upvote->loggedInHistory;
-        } else {
-            $history = Upvote::$plugin->upvote->anonymousHistory;
-        }
-        // If user already voted in this direction, mark as a match
-        $item = Upvote::$plugin->upvote->setItemKey($elementId, $key);
-        if (array_key_exists($item, $history) && ($history[$item] == $vote)) {
-            $genericClass .= ' upvote-vote-match';
-        }
-        // Compile DOM element
-        $span = '<span onclick="'.$js.'" class="'.$genericClass.' '.$uniqueClass.'">'.$icon.'</span>';
+        // Set data ID
+        $dataId = $upvote->setItemKey($elementId, $key);
+        // Compile HTML
+        $span = '<span data-id="'.$dataId.'" class="'.$genericClass.' '.$uniqueClass.'" onclick="'.$js.'">'.$icon.'</span>';
         return Template::raw($span);
     }
 
@@ -206,28 +204,13 @@ class UpvoteVariable
         // Include JS resources
         $view->registerAssetBundle(JsAssets::class);
 
-        // Get config settings
-        $config = Craft::$app->getConfig()->getGeneral();
-
         // Dev Mode
-        if ($config->devMode) {
+        if (Craft::$app->getConfig()->getGeneral()->devMode) {
             $view->registerJs('upvote.devMode = true;', $view::POS_END);
         }
 
         // Action trigger
-        $view->registerJs('upvote.actionUrl = "'.UrlHelper::actionUrl().'/";', $view::POS_END);
-
-        // CSRF
-        if ($config->enableCsrfProtection === true) {
-            if (!$this->_csrfIncluded) {
-                $csrf = '
-window.csrfTokenName = "'.$config->csrfTokenName.'";
-window.csrfTokenValue = "'.Craft::$app->request->getCsrfToken().'";
-';
-                $view->registerJs($csrf, $view::POS_END);
-                $this->_csrfIncluded = true;
-            }
-        }
+        $view->registerJs('upvote.actionUrl = "'.UrlHelper::actionUrl().'";', $view::POS_END);
 
         // Mark JS as included
         $this->_jsIncluded = true;

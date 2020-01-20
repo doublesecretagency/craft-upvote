@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.0 - 2020- ????????
+
+### Added
+- Cache-proof! Now works flawlessly with caching plugins or native Craft caching.
+
 ## 2.0.4 - 2019-09-24
 
 ### Added

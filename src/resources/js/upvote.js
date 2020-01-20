@@ -2,11 +2,103 @@
 var ajax = window.superagent;
 
 // Upvote JS object
-var upvote = {
+window.upvote = {
     // Default action url
     actionUrl: '/actions/',
     // No CSRF token by default
     csrfToken: false,
+    // Whether setup has been completed
+    setupComplete: false,
+    // Initialize upvote elements on page
+    pageSetup: function () {
+        // Initialize
+        var ids = [];
+        var elementId;
+        // Get relevant DOM elements
+        var elements = document.getElementsByClassName('upvote-el');
+        elements = Array.prototype.slice.call(elements);
+        // Loop through elements
+        for (i in elements) {
+            // Get element ID
+            elementId = elements[i].dataset.id;
+            // If element ID is missing, add it
+            if (-1 == ids.indexOf(elementId)) {
+                ids.push(elementId);
+            }
+        }
+        // Configure all elements on page
+        upvote.configure(ids);
+        // Mark setup as complete!
+        upvote.setupComplete = true;
+    },
+    // Configure elements
+    configure: function (ids) {
+        // Make object available to callback
+        var that = this;
+        // Callback function for casting a vote
+        var configureElements = function () {
+            // Initialize data with CSRF token
+            var data = JSON.parse(JSON.stringify(that.csrfToken));
+            // Set data
+            data['ids[]'] = ids;
+            // Remove vote
+            ajax
+                .post(that.actionUrl+'upvote/page/configure')
+                .send(data)
+                .end(function (err, res) {
+                    // If something went wrong, bail
+                    if (!res.ok) {
+                        console.log('Error configuring Upvote elements:', err);
+                        return;
+                    }
+                    // Get response data
+                    var data = res.body;
+                    // If no elements to configure, bail
+                    if (!data || !Array.isArray(data)) {
+                        return;
+                    }
+                    // Declare variables for loop
+                    var entry, id, group,
+                        elementTallies,
+                        elementUpvotes,
+                        elementDownvotes;
+                    // Loop through response data
+                    for (var i in data) {
+                        // Get entry data
+                        entry = data[i];
+                        // Collect matching DOM elements
+                        group = "[data-id='"+entry['itemKey']+"']";
+                        elementTallies   = document.querySelectorAll(group+".upvote-tally");
+                        elementUpvotes   = document.querySelectorAll(group+".upvote-upvote");
+                        elementDownvotes = document.querySelectorAll(group+".upvote-downvote");
+                        // Set all tally values
+                        for (var el of elementTallies) {
+                            el.innerHTML = entry['tally'];
+                        }
+                        // Mark upvote & downvote icons
+                        switch (parseInt(entry['userVote'])) {
+                            case 1:
+                                // Mark upvote
+                                that._addMatchClass(elementUpvotes);
+                                break;
+                            case -1:
+                                // Mark downvote
+                                that._addMatchClass(elementDownvotes);
+                                break;
+                        }
+                    }
+                })
+            ;
+        };
+        // If token already exists
+        if (this.csrfToken) {
+            // Configure DOM elements using existing token
+            configureElements();
+        } else {
+            // Configure DOM elements using a fresh token
+            this.getCsrf(configureElements);
+        }
+    },
     // Cast an upvote
     upvote: function (elementId, key) {
         if (this.devMode) {
@@ -26,12 +118,12 @@ var upvote = {
         console.log('Vote removal is disabled.');
     },
     // Submit AJAX with fresh CSRF token
-    _csrf: function (callback) {
+    getCsrf: function (callback) {
         // Make object available to callback
         var that = this;
         // Fetch a new CSRF token
         ajax
-            .get(this.actionUrl+'upvote/csrf')
+            .get(this.actionUrl+'upvote/page/csrf')
             .end(function(err, res){
                 // If something went wrong, bail
                 if (!res.ok) {
@@ -47,6 +139,10 @@ var upvote = {
     },
     // Cast vote
     _vote: function (elementId, key, vote) {
+        // If setup is not complete, bail
+        if (!this.setupComplete) {
+            return;
+        }
         // Make object available to callback
         var that = this;
         // Callback function for casting a vote
@@ -118,7 +214,7 @@ var upvote = {
             castVote();
         } else {
             // Cast vote using a fresh token
-            this._csrf(castVote);
+            this.getCsrf(castVote);
         }
     },
     // Update tally
@@ -151,5 +247,12 @@ var upvote = {
         for (var i = 0; i < icons.length; i++) {
             icons[i].className = icons[i].className.replace('upvote-vote-match', '');
         }
+    },
+    // Check whether a DOM element has specified class
+    _hasClass(element, className) {
+        return (' ' + element.className + ' ').indexOf(' ' + className+ ' ') > -1;
     }
 };
+
+// On page load, preload Upvote data
+addEventListener('load', upvote.pageSetup);

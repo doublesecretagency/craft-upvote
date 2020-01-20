@@ -31,9 +31,9 @@ class UpvoteService extends Component
     public $loggedInHistory = [];
 
     // Generate combined item key
-    public function setItemKey($elementId, $key)
+    public function setItemKey($elementId, $key, $separator = ':')
     {
-        return $elementId.($key ? ':'.$key : '');
+        return $elementId.($key ? $separator.$key : '');
     }
 
     // Get history of logged-in user
