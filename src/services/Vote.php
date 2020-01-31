@@ -11,6 +11,7 @@
 
 namespace doublesecretagency\upvote\services;
 
+use craft\helpers\Json;
 use yii\base\Event;
 use yii\web\Cookie;
 
@@ -78,12 +79,12 @@ class Vote extends Component
         Upvote::$plugin->upvote->validateUserId($userId);
 
         // Prep return data
-        $returnData = [
-            'id'     => $elementId,
-            'key'    => $key,
-            'vote'   => $vote,
-            'userId' => $userId,
-        ];
+        $itemKey = Upvote::$plugin->upvote->setItemKey($elementId, $key);
+        $returnData = Upvote::$plugin->upvote->compileElementData($itemKey, $vote);
+        $returnData['vote'] = $vote; // DEPRECATED: REMOVE IN NEXT MAJOR VERSION
+
+        // Update original history
+        Upvote::$plugin->upvote->history[$itemKey] = $vote;
 
         // Trigger event before a vote is cast
         if (Event::hasHandlers(Upvote::class, Upvote::EVENT_BEFORE_VOTE)) {
@@ -123,37 +124,37 @@ class Vote extends Component
         Upvote::$plugin->upvote->validateUserId($userId);
 
         // Prep return data
-        $returnData = [
-            'id'       => $elementId,
-            'key'      => $key,
-            'antivote' => null,
-            'userId'   => $userId,
-        ];
+        $itemKey = Upvote::$plugin->upvote->setItemKey($elementId, $key);
+        $returnData = Upvote::$plugin->upvote->compileElementData($itemKey, null, true);
+
+        // Get original vote
+        $originalVote = $returnData['userVote'];
+
+        // If no original vote, bail
+        if (!$originalVote) {
+            return 'Unable to remove vote. No vote was ever cast.';
+        }
+
+        // Get antivote
+        $antivote = (-1 * $originalVote);
+        $returnData['userVote'] = $antivote;
+        $returnData['antivote'] = $antivote; // DEPRECATED: REMOVE IN NEXT MAJOR VERSION
 
         // Trigger event before a vote is removed
         if (Event::hasHandlers(Upvote::class, Upvote::EVENT_BEFORE_UNVOTE)) {
             Event::trigger(Upvote::class, Upvote::EVENT_BEFORE_UNVOTE, new UnvoteEvent($returnData));
         }
 
-        //
-        // FLAW:
-        // It's impossible to know the value of $originalVote before killing cookie/DB.
-        // Therefore, $antivote can't be contained in the 'onBeforeUnvote' event.
-        //
+        // Remove user vote
+        $this->_removeVoteFromCookie($elementId, $key);
+        $this->_removeVoteFromDb($elementId, $key, $userId);
 
-        $originalVote = false;
-
-        $this->_removeVoteFromCookie($elementId, $key, $originalVote);
-        $this->_removeVoteFromDb($elementId, $key, $originalVote, $userId);
-
-        if (!$originalVote) {
-            return 'Unable to remove vote.';
-        }
-
-        $antivote = (-1 * $originalVote);
-        $returnData['antivote'] = $antivote;
+        // Update vote logs
         $this->_updateElementTotals($elementId, $key, $antivote, true);
         $this->_updateVoteLog($elementId, $key, $antivote, $userId, true);
+
+        // Remove vote from user history
+        unset(Upvote::$plugin->upvote->history[$itemKey]);
 
         // Trigger event after a vote is removed
         if (Event::hasHandlers(Upvote::class, Upvote::EVENT_AFTER_UNVOTE)) {
@@ -183,7 +184,7 @@ class Vote extends Component
 
         // If record already exists
         if ($record) {
-            $history = json_decode($record->history, true);
+            $history = Json::decode($record->history);
             // If user has already voted on element, bail
             if (array_key_exists($item, $history)) {
                 return false;
@@ -225,7 +226,7 @@ class Vote extends Component
         // Set cookie
         $cookie = new Cookie();
         $cookie->name = $cookieName;
-        $cookie->value = json_encode($history);
+        $cookie->value = Json::encode($history);
         $cookie->expire = time() + $lifespan;
         Craft::$app->getResponse()->getCookies()->add($cookie);
     }
@@ -308,7 +309,7 @@ class Vote extends Component
     }
 
     //
-    private function _removeVoteFromCookie($elementId, $key, &$originalVote)
+    private function _removeVoteFromCookie($elementId, $key)
     {
         // Get user history
         $history =& Upvote::$plugin->upvote->anonymousHistory;
@@ -326,16 +327,13 @@ class Vote extends Component
             return false;
         }
 
-        // Get original vote value
-        $originalVote = $history[$item];
-
         // Remove item from history
         unset($history[$item]);
         $this->saveUserHistoryCookie();
     }
 
     //
-    private function _removeVoteFromDb($elementId, $key, &$originalVote, $userId)
+    private function _removeVoteFromDb($elementId, $key, $userId)
     {
         // If no user ID, bail
         if (!$userId) {
@@ -353,17 +351,12 @@ class Vote extends Component
         }
 
         // Remove from database history
-        $historyDb = json_decode($record->history, true);
+        $historyDb = Json::decode($record->history);
         $item = Upvote::$plugin->upvote->setItemKey($elementId, $key);
 
         // If item doesn't exist in history, bail
         if (!array_key_exists($item, $historyDb)) {
             return false;
-        }
-
-        // Update original vote (by reference)
-        if (!$originalVote) {
-            $originalVote = $historyDb[$item];
         }
 
         // Remove item from history

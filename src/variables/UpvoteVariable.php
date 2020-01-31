@@ -46,17 +46,7 @@ class UpvoteVariable
     //
     public function tally($elementId, $key = null)
     {
-        // Get Upvote service
-        $upvote = Upvote::$plugin->upvote;
-        // Set classes
-        $genericClass = 'upvote-el upvote-tally';
-        $uniqueClass  = 'upvote-tally-'.$upvote->setItemKey($elementId, $key, '-');
-        // Set data ID
-        $dataId = $upvote->setItemKey($elementId, $key);
-        // Compile HTML
-        $span = '<span data-id="'.$dataId.'" class="'.$genericClass.' '.$uniqueClass.'">&nbsp;</span>';
-        // Return HTML
-        return Template::raw($span);
+        return $this->_renderNumber($elementId, $key, 'upvote-tally');
     }
 
     //
@@ -76,37 +66,38 @@ class UpvoteVariable
     // Output total votes of element
     public function totalVotes($elementId, $key = null)
     {
-        // If element ID is invalid, log error
-        if (!$elementId || !is_numeric($elementId)) {
-//            UpvotePlugin::log('Invalid element ID');
-            return 0;
-        }
-        return Upvote::$plugin->upvote_query->totalVotes($elementId, $key);
+        return $this->_renderNumber($elementId, $key, 'upvote-total-votes');
     }
 
     // Output total upvotes of element
     public function totalUpvotes($elementId, $key = null)
     {
-        // If element ID is invalid, log error
-        if (!$elementId || !is_numeric($elementId)) {
-//            UpvotePlugin::log('Invalid element ID');
-            return 0;
-        }
-        return Upvote::$plugin->upvote_query->totalUpvotes($elementId, $key);
+        return $this->_renderNumber($elementId, $key, 'upvote-total-upvotes');
     }
 
     // Output total downvotes of element
     public function totalDownvotes($elementId, $key = null)
     {
-        // If element ID is invalid, log error
-        if (!$elementId || !is_numeric($elementId)) {
-//            UpvotePlugin::log('Invalid element ID');
-            return 0;
-        }
-        return Upvote::$plugin->upvote_query->totalDownvotes($elementId, $key);
+        return $this->_renderNumber($elementId, $key, 'upvote-total-downvotes');
     }
 
     // ========================================================================
+
+    //
+    private function _renderNumber($elementId, $key, $class)
+    {
+        // Get Upvote service
+        $upvote = Upvote::$plugin->upvote;
+        // Set classes
+        $genericClass = 'upvote-el '.$class;
+        $uniqueClass = $class.'-'.$upvote->setItemKey($elementId, $key, '-');
+        // Set data ID
+        $dataId = $upvote->setItemKey($elementId, $key);
+        // Compile HTML
+        $span = '<span data-id="'.$dataId.'" class="'.$genericClass.' '.$uniqueClass.'">&nbsp;</span>';
+        // Return HTML
+        return Template::raw($span);
+    }
 
     //
     private function _renderIcon($elementId, $key = null, $vote)

@@ -83,62 +83,11 @@ class PageController extends Controller
         // Loop through IDs provided
         foreach ($ids as $itemKey) {
             // Compile individual element
-            $data[] = $this->_compileElement($itemKey);
+            $data[] = Upvote::$plugin->upvote->compileElementData($itemKey);
         }
 
         // Return response data
         return $this->asJson($data);
-    }
-
-    /**
-     */
-    private function _compileElement($itemKey)
-    {
-        // Split ID into array
-        $parts = explode(':', $itemKey);
-
-        // Get the element ID
-        $elementId = (int) array_shift($parts);
-
-        // If no element ID, bail
-        if (!$elementId) {
-            return;
-        }
-
-        // Reassemble the remaining parts (in case the key contains a colon)
-        $key = implode(':', $parts);
-
-        // If no key, set to null
-        if (!$key) {
-            $key = null;
-        }
-
-        // Return element's vote data
-        return [
-            'id' => $elementId,
-            'key' => $key,
-            'itemKey' => $itemKey,
-            'userVote' => $this->_userVote($itemKey),
-            'tally' => Upvote::$plugin->upvote_query->tally($elementId, $key),
-        ];
-    }
-
-    /**
-     * Get the user's vote for specified element.
-     */
-    private function _userVote($itemKey)
-    {
-        // If login is required
-        if (Upvote::$plugin->getSettings()->requireLogin) {
-            // Get user history from DB
-            $history = Upvote::$plugin->upvote->loggedInHistory;
-        } else {
-            // Get anonymous user history
-            $history = Upvote::$plugin->upvote->anonymousHistory;
-        }
-
-        // Return the user's vote for specified element
-        return ($history[$itemKey] ?? null);
     }
 
 }

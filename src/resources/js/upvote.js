@@ -22,7 +22,7 @@ window.upvote = {
             // Get element ID
             elementId = elements[i].dataset.id;
             // If element ID is missing, add it
-            if (-1 == ids.indexOf(elementId)) {
+            if (-1 === ids.indexOf(elementId)) {
                 ids.push(elementId);
             }
         }
@@ -58,34 +58,28 @@ window.upvote = {
                         return;
                     }
                     // Declare variables for loop
-                    var entry, id, group,
-                        elementTallies,
-                        elementUpvotes,
-                        elementDownvotes;
+                    var entry, group, upvotes, downvotes;
                     // Loop through response data
                     for (var i in data) {
                         // Get entry data
                         entry = data[i];
                         // Collect matching DOM elements
                         group = "[data-id='"+entry['itemKey']+"']";
-                        elementTallies   = document.querySelectorAll(group+".upvote-tally");
-                        elementUpvotes   = document.querySelectorAll(group+".upvote-upvote");
-                        elementDownvotes = document.querySelectorAll(group+".upvote-downvote");
-                        // Set all tally values
-                        for (var el of elementTallies) {
-                            el.innerHTML = entry['tally'];
-                        }
+                        upvotes = document.querySelectorAll(group+".upvote-upvote");
+                        downvotes = document.querySelectorAll(group+".upvote-downvote");
                         // Mark upvote & downvote icons
                         switch (parseInt(entry['userVote'])) {
                             case 1:
                                 // Mark upvote
-                                that._addMatchClass(elementUpvotes);
+                                that._addMatchClass(upvotes);
                                 break;
                             case -1:
                                 // Mark downvote
-                                that._addMatchClass(elementDownvotes);
+                                that._addMatchClass(downvotes);
                                 break;
                         }
+                        // Set all values
+                        upvote._setAllValues(entry);
                     }
                 })
             ;
@@ -184,23 +178,23 @@ window.upvote = {
                     .type('form')
                     .set('X-Requested-With','XMLHttpRequest')
                     .end(function (response) {
-                        var results = JSON.parse(response.text);
-                        if (upvote.devMode) {
-                            console.log('['+elementId+']'+(key ? ' ['+key+']' : '')+' Successfully cast '+vote);
-                            console.log(results);
+                        // Get entry data
+                        var entry = JSON.parse(response.text);
+                        // Set message prefix
+                        var prefix = '['+entry.id+']'+(entry.key ? ' ['+entry.key+']' : '');
+                        // If error was returned, log and bail
+                        if (typeof entry === 'string') {
+                            console.log(prefix+' '+entry);
+                            return;
                         }
-                        var errorReturned = (typeof results === 'string' || results instanceof String);
-                        // If no error message was returned
-                        if (!errorReturned) {
-                            // If swapping vote
-                            if (oppositeMatch) {
-                                results.vote = results.vote * 2;
-                                upvote._removeMatchClass(oppositeIcons);
-                            }
-                            // Update tally & add class
-                            upvote._updateTally(elementId, key, results.vote);
-                            upvote._addMatchClass(voteIcons);
+                        // If swapping vote
+                        if (oppositeMatch) {
+                            entry.userVote = entry.userVote * 2;
+                            upvote._removeMatchClass(oppositeIcons);
                         }
+                        // Update values & add class
+                        upvote._setAllValues(entry);
+                        upvote._addMatchClass(voteIcons);
                     })
                 ;
             } else {
@@ -217,11 +211,21 @@ window.upvote = {
             this.getCsrf(castVote);
         }
     },
-    // Update tally
-    _updateTally: function (elementId, key, vote) {
-        var tallies = Sizzle('.upvote-tally-'+this._setItemKey(elementId, key));
-        for (var i = 0; i < tallies.length; i++) {
-            tallies[i].textContent = parseInt(tallies[i].textContent) + parseInt(vote);
+    // Update all numeric values on the page
+    _setAllValues: function (entry) {
+        upvote._setValue(entry, 'tally', 'tally');
+        upvote._setValue(entry, 'totalVotes', 'total-votes');
+        upvote._setValue(entry, 'totalUpvotes', 'total-upvotes');
+        upvote._setValue(entry, 'totalDownvotes', 'total-downvotes');
+    },
+    // Update the numeric value for a single element
+    _setValue: function (entry, key, classSuffix) {
+        // Collect matching DOM elements
+        group = "[data-id='"+entry['itemKey']+"']";
+        results = document.querySelectorAll(group+".upvote-"+classSuffix);
+        // Set value for all matching elements
+        for (var el of results) {
+            el.innerHTML = parseInt(entry[key]);
         }
     },
     // Generate combined item key
