@@ -15,7 +15,7 @@ upvote.removeVote = function (elementId, key) {
         data['key'] = key;
         // Remove vote
         ajax
-            .post(upvote.actionUrl+'upvote/vote/remove')
+            .post(upvote.getActionUrl()+'/upvote/vote/remove')
             .send(data)
             .type('form')
             .set('X-Requested-With','XMLHttpRequest')

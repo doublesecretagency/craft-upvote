@@ -43,7 +43,7 @@ window.upvote = {
             data['ids[]'] = ids;
             // Remove vote
             ajax
-                .post(that.actionUrl+'upvote/page/configure')
+                .post(that.getActionUrl()+'/upvote/page/configure')
                 .send(data)
                 .end(function (err, res) {
                     // If something went wrong, bail
@@ -111,13 +111,17 @@ window.upvote = {
     removeVote: function () {
         console.log('Vote removal is disabled.');
     },
+    // Normalize action URL
+    getActionUrl: function () {
+        return this.actionUrl.replace(/\/+$/,'');
+    },
     // Submit AJAX with fresh CSRF token
     getCsrf: function (callback) {
         // Make object available to callback
         var that = this;
         // Fetch a new CSRF token
         ajax
-            .get(this.actionUrl+'upvote/page/csrf')
+            .get(this.getActionUrl()+'/upvote/page/csrf')
             .end(function(err, res){
                 // If something went wrong, bail
                 if (!res.ok) {
@@ -125,7 +129,7 @@ window.upvote = {
                     return;
                 }
                 // Set global CSRF token
-                that.csrfToken = res.body;
+                upvote.csrfToken = res.body;
                 // Run callback
                 callback();
             })
@@ -166,10 +170,10 @@ window.upvote = {
                 // If opposite vote has already been cast
                 if (oppositeMatch) {
                     // Swap vote
-                    var action = that.actionUrl+'upvote/vote/swap';
+                    var action = that.getActionUrl()+'/upvote/vote/swap';
                 } else {
                     // Cast new vote
-                    var action = that.actionUrl+'upvote/vote/'+vote;
+                    var action = that.getActionUrl()+'/upvote/vote/'+vote;
                 }
                 // Vote via AJAX
                 ajax
@@ -266,7 +270,7 @@ addEventListener('load', function () {
         var data = JSON.parse(JSON.stringify(upvote.csrfToken));
         // Remove vote
         ajax
-            .post(upvote.actionUrl+'upvote/page/preload')
+            .post(upvote.getActionUrl()+'/upvote/page/preload')
             .send(data)
             .end(function (err, res) {
                 // If something went wrong, bail
