@@ -43,7 +43,9 @@ class PageController extends Controller
         $preload = (bool) Upvote::$plugin->getSettings()->preload;
 
         // Return whether or not preloading is enabled
-        return $this->asJson(['enabled' => $preload]);
+        return $this->asJson([
+            'enabled' => $preload
+        ]);
     }
 
     /**
@@ -67,7 +69,7 @@ class PageController extends Controller
      *
      * @return Response
      */
-    public function actionConfigure() // : Response
+    public function actionConfigure(): Response
     {
         // Initialize list of elements to compile
         $data = [];
@@ -77,7 +79,7 @@ class PageController extends Controller
 
         // If IDs are not an array, or are empty, bail
         if (!is_array($ids) || empty($ids)) {
-            return;
+            return $this->asJson('Invalid IDs, unable to configure Upvote elements.');
         }
 
         // Loop through IDs provided

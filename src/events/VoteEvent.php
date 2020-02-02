@@ -20,16 +20,34 @@ use yii\base\Event;
 class VoteEvent extends Event
 {
 
-    /** @var int|null The element ID for the item being voted upon. */
+    /** @var int Element ID of the element being voted on. */
     public $id;
 
-    /** @var string|null An optional key. */
+    /** @var string|null Optional key for allowing multiple vote types. */
     public $key;
 
-    /** @var int|null The value of the vote. */
-    public $vote;
+    /** @var string Combination of `id` and optional `key`. */
+    public $itemKey;
 
-    /** @var int|null ID of user who voted (null if anonymous). */
+    /** @var int|null ID of the user casting a vote (if login is required to vote). */
     public $userId;
+
+    /** @var int The user's vote. Positive one is an upvote, negative one is a downvote. */
+    public $userVote;
+
+    /** @var bool Whether the event was triggered by a vote removal. */
+    public $isAntivote;
+
+    /** @var int The combined value of all votes. (Upvotes - Downvotes) */
+    public $tally;
+
+    /** @var int The combined total number of votes. (Upvotes + Downvotes) */
+    public $totalVotes;
+
+    /** @var int The total number of Upvotes cast. */
+    public $totalUpvotes;
+
+    /** @var int The total number of Downvotes cast. */
+    public $totalDownvotes;
 
 }

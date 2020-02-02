@@ -3,12 +3,12 @@
 ## 2.1.0 - 2020- ????????
 
 ### Added
-- Cache-proof! Now works flawlessly with caching plugins or native Craft caching.
-- Added "Data Preloading" setting, which can be disabled to manually trigger page setup.
-- Voting now has a visible impact on the Total Upvotes and Total Downvotes (if they are shown).
+- Cache-proof! Now works flawlessly with caching plugins or native Craft [caching](https://www.doublesecretagency.com/plugins/upvote/docs/caching).
+- Added "Data Preloading" setting, which can be [disabled](https://www.doublesecretagency.com/plugins/upvote/docs/disable-js-preloading) to manually trigger page setup.
+- Voting now has a visible impact on the Total Upvotes and Total Downvotes (if they are being displayed).
 
 ### Changed
-- Adjusted the values returned when using [events](https://www.doublesecretagency.com/plugins/upvote/docs/events).
+- Improved the parameters returned when using [events](https://www.doublesecretagency.com/plugins/upvote/docs/events).
 
 ## 2.0.4 - 2019-09-24
 

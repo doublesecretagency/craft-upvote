@@ -20,7 +20,6 @@ use craft\base\Component;
 
 use doublesecretagency\upvote\Upvote;
 use doublesecretagency\upvote\events\VoteEvent;
-use doublesecretagency\upvote\events\UnvoteEvent;
 use doublesecretagency\upvote\records\ElementTotal;
 use doublesecretagency\upvote\records\VoteLog;
 use doublesecretagency\upvote\records\UserHistory;
@@ -142,7 +141,7 @@ class Vote extends Component
 
         // Trigger event before a vote is removed
         if (Event::hasHandlers(Upvote::class, Upvote::EVENT_BEFORE_UNVOTE)) {
-            Event::trigger(Upvote::class, Upvote::EVENT_BEFORE_UNVOTE, new UnvoteEvent($returnData));
+            Event::trigger(Upvote::class, Upvote::EVENT_BEFORE_UNVOTE, new VoteEvent($returnData));
         }
 
         // Remove user vote
@@ -158,7 +157,7 @@ class Vote extends Component
 
         // Trigger event after a vote is removed
         if (Event::hasHandlers(Upvote::class, Upvote::EVENT_AFTER_UNVOTE)) {
-            Event::trigger(Upvote::class, Upvote::EVENT_AFTER_UNVOTE, new UnvoteEvent($returnData));
+            Event::trigger(Upvote::class, Upvote::EVENT_AFTER_UNVOTE, new VoteEvent($returnData));
         }
 
         // Return data
