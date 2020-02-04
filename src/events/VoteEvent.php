@@ -50,4 +50,12 @@ class VoteEvent extends Event
     /** @var int The total number of Downvotes cast. */
     public $totalDownvotes;
 
+    // DEPRECATED: REMOVE IN NEXT MAJOR VERSION
+
+    /** @var int|null DEPRECATED: Value of vote cast. Use `userVote` instead. */
+    public $vote;
+
+    /** @var int|null DEPRECATED: Opposing value of removed vote. Use `isAntivote` and `userVote` instead. */
+    public $antivote;
+
 }
