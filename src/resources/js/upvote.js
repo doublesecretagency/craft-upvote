@@ -3,6 +3,8 @@ var ajax = window.superagent;
 
 // Upvote JS object
 window.upvote = {
+    // Not in devMode by default
+    devMode: false,
     // Default action url
     actionUrl: '/actions/',
     // No CSRF token by default
