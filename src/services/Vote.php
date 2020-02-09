@@ -185,7 +185,7 @@ class Vote extends Component
         if ($record) {
             $history = Json::decode($record->history);
             // If user has already voted on element, bail
-            if (array_key_exists($item, $history)) {
+            if (isset($history[$item])) {
                 return false;
             }
         } else {
@@ -322,7 +322,7 @@ class Vote extends Component
         $item = Upvote::$plugin->upvote->setItemKey($elementId, $key);
 
         // If item doesn't exist in history, bail
-        if (!array_key_exists($item, $history)) {
+        if (!isset($history[$item])) {
             return false;
         }
 
@@ -354,7 +354,7 @@ class Vote extends Component
         $item = Upvote::$plugin->upvote->setItemKey($elementId, $key);
 
         // If item doesn't exist in history, bail
-        if (!array_key_exists($item, $historyDb)) {
+        if (!isset($historyDb[$item])) {
             return false;
         }
 
