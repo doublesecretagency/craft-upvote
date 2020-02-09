@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.1 - 2020-02-08
+
+### Fixed
+- Fixed PHP 7.4 compatibility issues.
+
 ## 2.1.0 - 2020-02-04
 
 ### Added
