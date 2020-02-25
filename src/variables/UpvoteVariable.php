@@ -28,11 +28,14 @@ use doublesecretagency\upvote\web\assets\FontAwesomeAssets;
 class UpvoteVariable
 {
 
+    const CONTAINER = 'container';
+    const NUMBER = 'number';
+    const BOTH = 'both';
+
     private $_disabled = [];
 
     private $_cssIncluded  = false;
     private $_jsIncluded   = false;
-    private $_csrfIncluded = false;
 
     //
     public function userHistory($userId = null)
@@ -43,64 +46,127 @@ class UpvoteVariable
         return Upvote::$plugin->upvote_query->userHistory($userId);
     }
 
-    //
-    public function tally($elementId, $key = null)
-    {
-        return $this->_renderNumber($elementId, $key, 'upvote-tally');
-    }
+    // ========================================================================
 
     //
     public function upvote($elementId, $key = null)
     {
-        return $this->_renderIcon($elementId, $key, Upvote::UPVOTE);
+        return $this->_renderIcon(Upvote::UPVOTE, $elementId, $key);
     }
 
     //
     public function downvote($elementId, $key = null)
     {
-        return $this->_renderIcon($elementId, $key, Upvote::DOWNVOTE);
+        return $this->_renderIcon(Upvote::DOWNVOTE, $elementId, $key);
     }
 
     // ========================================================================
 
-    // Output total votes of element
-    public function totalVotes($elementId, $key = null)
+    //
+    public function tally($elementId, $key = null, $format = self::CONTAINER)
     {
-        return $this->_renderNumber($elementId, $key, 'upvote-total-votes');
+        // Get value of element
+        $value = $this->_getValue('tally', $elementId, $key, $format);
+
+        // If number format, return integer value
+        if (static::NUMBER == $format) {
+            return (int) $value;
+        }
+
+        // Return number
+        return $this->_renderNumber('upvote-tally', $elementId, $key, $value);
+    }
+
+    // Output total votes of element
+    public function totalVotes($elementId, $key = null, $format = self::CONTAINER)
+    {
+        // Get value of element
+        $value = $this->_getValue('totalVotes', $elementId, $key, $format);
+
+        // If number format, return integer value
+        if (static::NUMBER == $format) {
+            return (int) $value;
+        }
+
+        // Return number
+        return $this->_renderNumber('upvote-total-votes', $elementId, $key, $value);
     }
 
     // Output total upvotes of element
-    public function totalUpvotes($elementId, $key = null)
+    public function totalUpvotes($elementId, $key = null, $format = self::CONTAINER)
     {
-        return $this->_renderNumber($elementId, $key, 'upvote-total-upvotes');
+        // Get value of element
+        $value = $this->_getValue('totalUpvotes', $elementId, $key, $format);
+
+        // If number format, return integer value
+        if (static::NUMBER == $format) {
+            return (int) $value;
+        }
+
+        // Return number
+        return $this->_renderNumber('upvote-total-upvotes', $elementId, $key, $value);
     }
 
     // Output total downvotes of element
-    public function totalDownvotes($elementId, $key = null)
+    public function totalDownvotes($elementId, $key = null, $format = self::CONTAINER)
     {
-        return $this->_renderNumber($elementId, $key, 'upvote-total-downvotes');
+        // Get value of element
+        $value = $this->_getValue('totalDownvotes', $elementId, $key, $format);
+
+        // If number format, return integer value
+        if (static::NUMBER == $format) {
+            return (int) $value;
+        }
+
+        // Return number
+        return $this->_renderNumber('upvote-total-downvotes', $elementId, $key, $value);
     }
 
     // ========================================================================
 
     //
-    private function _renderNumber($elementId, $key, $class)
+    private function _numericFormat($format): bool
     {
-        // Get Upvote service
-        $upvote = Upvote::$plugin->upvote;
-        // Set classes
-        $genericClass = 'upvote-el '.$class;
-        $uniqueClass = $class.'-'.$upvote->setItemKey($elementId, $key, '-');
-        // Set data ID
-        $dataId = $upvote->setItemKey($elementId, $key);
-        // Compile HTML
-        $span = '<span data-id="'.$dataId.'" class="'.$genericClass.' '.$uniqueClass.'">&nbsp;</span>';
-        // Return HTML
-        return Template::raw($span);
+        // Whether we need the numeric value
+        return in_array($format, [static::NUMBER, static::BOTH]);
     }
 
     //
-    private function _renderIcon($elementId, $key = null, $vote)
+    private function _getValue($method, $elementId, $key, $format)
+    {
+        // Return the numeric value
+        if ($this->_numericFormat($format)) {
+            return Upvote::$plugin->upvote_query->{$method}($elementId, $key);
+        }
+
+        // Default to non-breaking space
+        return '&nbsp;';
+    }
+
+    // ========================================================================
+
+    //
+    private function _renderNumber($class, $elementId, $key, $value)
+    {
+        // Get Upvote service
+        $upvote = Upvote::$plugin->upvote;
+
+        // Set classes
+        $genericClass = 'upvote-el '.$class;
+        $uniqueClass = $class.'-'.$upvote->setItemKey($elementId, $key, '-');
+
+        // Set data ID
+        $dataId = $upvote->setItemKey($elementId, $key);
+
+        // Compile HTML
+        $html = '<span data-id="'.$dataId.'" class="'.$genericClass.' '.$uniqueClass.'">'.$value.'</span>';
+
+        // Return HTML
+        return Template::raw($html);
+    }
+
+    //
+    private function _renderIcon($vote, $elementId, $key)
     {
         $this->_includeCss();
         // Get Upvote service

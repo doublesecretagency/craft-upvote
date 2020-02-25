@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.2 - 2020-02-24
+
+### Added
+- Added control of the [output format](https://www.doublesecretagency.com/plugins/upvote/docs/control-the-output-format) of vote values.
+
 ## 2.1.1 - 2020-02-08
 
 ### Fixed
