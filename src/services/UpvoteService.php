@@ -54,6 +54,108 @@ class UpvoteService extends Component
         return $elementId.($key ? $separator.$key : '');
     }
 
+
+    private function getHistoryInGroup($groupHandle, $userId)
+    {
+        // If table has not been created yet, bail
+        if (!Craft::$app->getDb()->tableExists('{{%upvote_userhistories}}')) {
+            return false;
+        }
+
+        // if user not logged in (userId == null)
+        if(is_null($userId)){
+            return false;
+        }   
+
+        $history = Upvote::$plugin->upvote_query->userHistory($userId);
+
+        // if user has no history, bail
+        if(empty($history)){
+            return false;
+        }
+
+        // filter user history to get votes from specific groups
+        if(is_null($groupHandle)){
+             // if group handle was not privided
+            $votesFromGroup = array_filter($history, function($singleKey){
+                $keyParts = explode(':', $singleKey);
+                return (count($keyParts) == 1);
+            }, ARRAY_FILTER_USE_KEY );
+        }else{
+            // if group handle was provided
+            $votesFromGroup = array_filter($history, function($singleKey) use($groupHandle){
+                $keyParts = explode(':', $singleKey);
+                return (count($keyParts) == 2 && $keyParts[1] == $groupHandle);
+            }, ARRAY_FILTER_USE_KEY );            
+        }
+
+         // if group has no votes, bail
+        if(empty($votesFromGroup)){
+            return false;
+        }
+
+        return $votesFromGroup;
+    }
+
+    private function formatHistoryInGroup($groupHandle, $userId)
+    {
+        // votes from provided group
+        $votesInGroup = $this->getHistoryInGroup($groupHandle, $userId);
+
+        // is something went wrong 
+        if(!$votesInGroup){
+            return false;
+        }
+
+        // transform into proper format
+        $votesFormatted = [];
+        foreach ($votesInGroup as $key => $value) {
+            $singleVote = array();
+            $singleVote['id'] = (int)explode(':', $key)[0];
+            $singleVote['vote'] = $value;
+            $votesFormatted[] = $singleVote;
+        }
+
+        return $votesFormatted;
+    }
+
+
+    public function getVotesInGroup($groupHandle, $userId)
+    {   
+        $votesInGroup = $this->formatHistoryInGroup($groupHandle, $userId);
+
+        // if something went wrong return empty array
+        if(!$votesInGroup){
+            return array();
+        }
+
+        return $votesInGroup;
+    }
+
+    public function getHasVoted($elementId, $groupHandle, $userId)
+    {
+        // votes from provided group
+        $votesInGroup = $this->formatHistoryInGroup($groupHandle, $userId);
+
+        // default vote state - not voted
+        $vote_state = 0;
+
+        // is something went wrong
+        if(empty($votesInGroup)){
+            return $vote_state;
+        }
+
+        // check if voted for element
+        foreach ($votesInGroup as $singleVote) {
+            if($singleVote['id'] == $elementId){
+                $vote_state = $singleVote['vote'];
+            }
+        }
+
+        return $vote_state;
+    }
+
+
     // Get history of logged-in user
     public function getUserHistory()
     {

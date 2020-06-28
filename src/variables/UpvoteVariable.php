@@ -48,6 +48,25 @@ class UpvoteVariable
 
     // ========================================================================
 
+
+    public function votesInGroup($groupHandle = null, $userId = null)
+    {
+        // Ensure the user ID is valid (defaults to current user)
+        Upvote::$plugin->upvote->validateUserId($userId);
+
+        return Upvote::$plugin->upvote->getVotesInGroup($groupHandle, $userId); 
+    }
+
+
+    public function hasVoted($elementId, $groupHandle = null, $userId = null)
+    {
+        // Ensure the user ID is valid (defaults to current user)
+        Upvote::$plugin->upvote->validateUserId($userId);
+
+        return Upvote::$plugin->upvote->getHasVoted($elementId, $groupHandle, $userId); 
+    }
+
+
     //
     public function upvote($elementId, $key = null)
     {
