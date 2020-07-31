@@ -11,6 +11,7 @@
 
 namespace doublesecretagency\upvote\services;
 
+use craft\helpers\Json;
 use yii\db\Expression;
 
 use Craft;
@@ -83,20 +84,98 @@ class Query extends Component
 
     // ========================================================================
 
-    //
-    public function userHistory($userId = null): array
+    /**
+     * Get the history of a specified user.
+     *
+     * @param int $userId
+     * @return array
+     */
+    public function userHistory(int $userId): array
     {
-        if (!$userId) {
-            return [];
-        }
+        // Get the complete history of the specified user
         $record = UserHistory::findOne([
             'id' => $userId,
         ]);
+
+        // If no user history exists, return an empty array
         if (!$record) {
             return [];
         }
-        return json_decode($record->history, true);
+
+        // Return complete user history as an array
+        return Json::decode($record->history);
     }
+
+    /**
+     * Get the history of a specified user, organized by unique keys.
+     * Optionally filter to a subset of votes, based on a specified key.
+     *
+     * @param int $userId
+     * @param string|false $keyFilter
+     * @return array
+     */
+    public function userHistoryByKey(int $userId, $keyFilter = false): array
+    {
+        // Get complete user history
+        $history = $this->userHistory($userId);
+
+        // If there's no history, return an empty array
+        if (!$history) {
+            return [];
+        }
+
+        // Initialize history with keys
+        $historyWithKeys = [];
+
+        // Loop through entire history
+        foreach ($history as $item => $vote) {
+
+            // Whether the vote include a unique key
+            $hasKey = (false !== strpos($item, ':'));
+
+            // If the vote is using a unique key
+            if ($hasKey) {
+                // Split element ID and key
+                list($elementId, $key) = explode(':', $item);
+            } else {
+                // Get element ID with no key
+                list($elementId, $key) = [$item, null];
+            }
+
+            // Recompile history
+            $historyWithKeys[(string) $key][(int) $elementId] = $vote;
+
+        }
+
+        // If not looking for a subset, return the whole thing
+        if (false === $keyFilter) {
+            return $historyWithKeys;
+        }
+
+        // Return a filtered subset of the history
+        return $historyWithKeys[$keyFilter] ?? [];
+    }
+
+    /**
+     * Retrieve the specific vote cast by a specific user.
+     * If the user has not voted on that particular element,
+     * the value will be returned as zero (0).
+     *
+     * @param int $userId
+     * @param int $elementId
+     * @param string|false $key
+     * @return int
+     */
+    public function userVote(int $userId, int $elementId, $key = false): int
+    {
+        // Get user's history with regards to specified key
+        $keyHistory = $this->userHistoryByKey($userId, $key);
+
+        // Return specific vote, or zero (0) if no vote exists
+        return ($keyHistory[$elementId] ?? 0);
+    }
+
+    // ========================================================================
 
     //
     public function orderByTally(ElementQuery $query, $key = null)

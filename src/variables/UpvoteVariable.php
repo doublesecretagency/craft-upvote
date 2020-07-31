@@ -34,11 +34,11 @@ class UpvoteVariable
 
     private $_disabled = [];
 
-    private $_cssIncluded  = false;
-    private $_jsIncluded   = false;
+    private $_cssIncluded = false;
+    private $_jsIncluded  = false;
 
     //
-    public function userHistory($userId = null)
+    public function userHistory($userId = null): array
     {
         // Ensure the user ID is valid (defaults to current user)
         Upvote::$plugin->upvote->validateUserId($userId);
@@ -46,26 +46,22 @@ class UpvoteVariable
         return Upvote::$plugin->upvote_query->userHistory($userId);
     }
 
+    //
+    public function userHistoryByKey($userId = null, $keyFilter = false): array
+    {
+        // Ensure the user ID is valid (defaults to current user)
+        Upvote::$plugin->upvote->validateUserId($userId);
+
+        return Upvote::$plugin->upvote_query->userHistoryByKey($userId, $keyFilter);
+    }
+
+    //
+    public function userVote(int $userId, int $elementId, $key = null): int
+    {
+        return Upvote::$plugin->upvote_query->userVote($userId, $elementId, $key);
+    }
+
     // ========================================================================
-
-
-    public function votesInGroup($groupHandle = null, $userId = null)
-    {
-        // Ensure the user ID is valid (defaults to current user)
-        Upvote::$plugin->upvote->validateUserId($userId);
-
-        return Upvote::$plugin->upvote->getVotesInGroup($groupHandle, $userId); 
-    }
-
-
-    public function hasVoted($elementId, $groupHandle = null, $userId = null)
-    {
-        // Ensure the user ID is valid (defaults to current user)
-        Upvote::$plugin->upvote->validateUserId($userId);
-
-        return Upvote::$plugin->upvote->getHasVoted($elementId, $groupHandle, $userId); 
-    }
-
 
     //
     public function upvote($elementId, $key = null)
