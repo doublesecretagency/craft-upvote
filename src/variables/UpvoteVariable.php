@@ -159,6 +159,11 @@ class UpvoteVariable
     //
     private function _getValue($method, $elementId, $key, $format)
     {
+        // If container format, ensure JS gets loaded
+        if (self::CONTAINER === $format) {
+            $this->_includeJs();
+        }
+
         // Return the numeric value
         if ($this->_numericFormat($format)) {
             return Upvote::$plugin->upvote_query->{$method}($elementId, $key);
