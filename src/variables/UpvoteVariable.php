@@ -37,6 +37,16 @@ class UpvoteVariable
     private $_cssIncluded = false;
     private $_jsIncluded  = false;
 
+    // ========================================================================
+
+    //
+    public function elementHistory($elementId, $key = null): array
+    {
+        return Upvote::$plugin->upvote_query->elementHistory($elementId, $key);
+    }
+
+    // ========================================================================
+
     //
     public function userHistory($userId = null): array
     {

@@ -85,7 +85,49 @@ class Query extends Component
     // ========================================================================
 
     /**
-     * Get the history of a specified user.
+     * Get the vote history of a specified element.
+     *
+     * @param int $elementId
+     * @return array
+     */
+    public function elementHistory(int $elementId, $key = null): array
+    {
+        // Get the complete collection of voting records
+        $allRecords = UserHistory::find()->all();
+
+        // If no voting records exist, return an empty array
+        if (!$allRecords) {
+            return [];
+        }
+
+        // Set value to compare against
+        $match = ($key ? "$elementId:$key" : $elementId);
+
+        // Initialize element history
+        $elementHistory = [];
+
+        // Loop through all user history records
+        foreach ($allRecords as $record) {
+
+            // Get the user vote history of each record
+            $userHistory = Json::decode($record->history);
+
+            // If matching vote exists in history
+            if (isset($userHistory[$match])) {
+                // Include the user ID and their respective vote
+                $elementHistory[$record->id] = $userHistory[$match];
+            }
+
+        }
+
+        // Return complete element history as an array
+        return $elementHistory;
+    }
+
+    // ========================================================================
+
+    /**
+     * Get the vote history of a specified user.
      *
      * @param int $userId
      * @return array
@@ -107,7 +149,7 @@ class Query extends Component
     }
 
     /**
-     * Get the history of a specified user, organized by unique keys.
+     * Get the vote history of a specified user, organized by unique keys.
      * Optionally filter to a subset of votes, based on a specified key.
      *
      * @param int $userId
