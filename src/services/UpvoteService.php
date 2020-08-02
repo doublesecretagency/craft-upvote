@@ -95,14 +95,11 @@ class UpvoteService extends Component
 
         // If cookie exists
         if ($cookies->has($this->userCookie)) {
-            // Get anonymous history
+            // Get history from cookie
             $cookieValue = $cookies->getValue($this->userCookie);
             $this->anonymousHistory = Json::decode($cookieValue);
-        }
-
-        // If no anonymous history and cookie oes not already exists
-        if (!$this->anonymousHistory && !$cookies->has($this->userCookie)) {
-            // Initialize anonymous history
+        } else {
+            // Initialize history and set cookie
             $this->anonymousHistory = [];
             Upvote::$plugin->upvote_vote->saveUserHistoryCookie();
         }
