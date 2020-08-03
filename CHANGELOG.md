@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.2.0 - 2020-08-04
+
+### Added
+- Added [`elementHistory`](https://www.doublesecretagency.com/plugins/upvote/docs/element-vote-history) method for getting the entire vote history of a specific element.
+- Added [`userHistoryByKey`](https://www.doublesecretagency.com/plugins/upvote/docs/user-vote-history) method for getting the entire vote history of a specific user, organized by the unique key of their votes. 
+- Added [`userVote`](https://www.doublesecretagency.com/plugins/upvote/docs/user-vote-history) method for getting the specific vote of a specific user for a specific element.
+
+### Fixed
+- Ensure JS gets loaded for containers.
+- Fixed a bug which was setting the anonymous history cookie too frequently.
+
 ## 2.1.2 - 2020-02-24
 
 ### Added
@@ -15,6 +26,7 @@
 ### Added
 - **Cache-proof!!** Now works flawlessly with caching plugins or native Craft [caching](https://www.doublesecretagency.com/plugins/upvote/docs/caching).
 - Added "Data Preloading" setting, which can be [disabled](https://www.doublesecretagency.com/plugins/upvote/docs/disable-js-preloading) to manually trigger page setup.
+- Added ability to [vote on behalf of a specific user (via PHP)](https://www.doublesecretagency.com/plugins/upvote/docs/cast-a-vote-on-behalf-of-a-specific-user).
 - Voting now has a visible impact on the Total Upvotes and Total Downvotes (if they are being displayed).
 
 ### Changed
