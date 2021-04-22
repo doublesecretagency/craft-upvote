@@ -1,9 +1,6 @@
 {
-  "name": "craft-upvote",
-  "version": "2.2.1",
-  "description": "Lets your users upvote/downvote, \"like\", or favorite any type of element.",
-  "main": "index.js",
   "private": true,
+  "main": "index.js",
   "directories": {
     "doc": "docs"
   },
@@ -13,7 +10,7 @@
   "author": "Double Secret Agency",
   "license": "Craft License",
   "devDependencies": {
-    "@vuepress/core": "^1.7.1",
-    "vuepress-theme-craftdocs": "^2.0.2"
+    "@vuepress/core": "^1.8.2",
+    "vuepress-theme-craftdocs": "^2.0.7"
   }
 }
