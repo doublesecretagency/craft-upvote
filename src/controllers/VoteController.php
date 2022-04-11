@@ -13,8 +13,11 @@ namespace doublesecretagency\upvote\controllers;
 
 use Craft;
 use craft\web\Controller;
-
 use doublesecretagency\upvote\Upvote;
+use doublesecretagency\upvote\models\Settings;
+use doublesecretagency\upvote\services\Vote;
+use yii\web\BadRequestHttpException;
+use yii\web\Response;
 
 /**
  * Class VoteController
@@ -23,17 +26,18 @@ use doublesecretagency\upvote\Upvote;
 class VoteController extends Controller
 {
 
-    // Protected Properties
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    protected array|bool|int $allowAnonymous = true;
 
     /**
-     * @var    bool|array Allows anonymous access to this controller's actions.
-     * @access protected
+     * Upvote specified element.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
      */
-    protected $allowAnonymous = true;
-
-    // Upvote specified element
-    public function actionUpvote()
+    public function actionUpvote(): Response
     {
         $this->requirePostRequest();
 
@@ -41,12 +45,17 @@ class VoteController extends Controller
         return $this->_castVote(Upvote::UPVOTE);
     }
 
-    // Downvote specified element
-    public function actionDownvote()
+    /**
+     * Downvote specified element.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     */
+    public function actionDownvote(): Response
     {
         $this->requirePostRequest();
 
-        // Get settings
+        /** @var Settings $settings */
         $settings = Upvote::$plugin->getSettings();
 
         // If downvoting is prohibited, bail
@@ -58,13 +67,21 @@ class VoteController extends Controller
         return $this->_castVote(Upvote::DOWNVOTE);
     }
 
-    // Swap vote on specified element
-    public function actionSwap()
+    /**
+     * Swap vote on specified element.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     */
+    public function actionSwap(): Response
     {
         $this->requirePostRequest();
 
-        // Get settings
+        /** @var Settings $settings */
         $settings = Upvote::$plugin->getSettings();
+
+        /** @var Vote $vote */
+        $vote = Upvote::$plugin->upvote_vote;
 
         // If vote removal is prohibited, bail
         if (!$settings->allowVoteRemoval) {
@@ -84,7 +101,7 @@ class VoteController extends Controller
         $key       = $request->getBodyParam('key');
 
         // Attempt to remove vote
-        $response = Upvote::$plugin->upvote_vote->removeVote($elementId, $key);
+        $response = $vote->removeVote($elementId, $key);
 
         // If message is returned, bail
         if (!is_array($response)) {
@@ -95,11 +112,19 @@ class VoteController extends Controller
         return $this->_castVote($response['antivote']);
     }
 
-    // Vote on specified element
-    private function _castVote($value)
+    /**
+     * Vote on specified element.
+     *
+     * @param int $value
+     * @return Response
+     */
+    private function _castVote(int $value): Response
     {
-        // Get settings
+        /** @var Settings $settings */
         $settings = Upvote::$plugin->getSettings();
+
+        /** @var Vote $vote */
+        $vote = Upvote::$plugin->upvote_vote;
 
         // Get current user & login requirement
         $currentUser   = Craft::$app->user->getIdentity();
@@ -118,18 +143,26 @@ class VoteController extends Controller
         $key       = $request->getBodyParam('key');
 
         // Cast vote
-        $response = Upvote::$plugin->upvote_vote->castVote($elementId, $key, $value);
+        $response = $vote->castVote($elementId, $key, $value);
 
         // Return response
         return $this->asJson($response);
     }
 
-    // ================================================================= //
+    // ========================================================================= //
 
-    // Withdraw vote from specified element
-    public function actionRemove()
+    /**
+     * Withdraw vote from specified element.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     */
+    public function actionRemove(): Response
     {
         $this->requirePostRequest();
+
+        /** @var Vote $vote */
+        $vote = Upvote::$plugin->upvote_vote;
 
         // Get request
         $request = Craft::$app->getRequest();
@@ -139,7 +172,7 @@ class VoteController extends Controller
         $key       = $request->getBodyParam('key');
 
         // Remove vote
-        $response = Upvote::$plugin->upvote_vote->removeVote($elementId, $key);
+        $response = $vote->removeVote($elementId, $key);
         return $this->asJson($response);
     }
 

@@ -23,14 +23,10 @@ use yii\web\Response;
 class PageController extends Controller
 {
 
-    // Protected Properties
-    // =========================================================================
-
     /**
-     * @var    bool|array Allows anonymous access to this controller's actions.
-     * @access protected
+     * @inheritdoc
      */
-    protected $allowAnonymous = true;
+    protected array|bool|int $allowAnonymous = true;
 
     /**
      * Check the preload config setting.
@@ -42,7 +38,7 @@ class PageController extends Controller
         // Get preload config setting
         $preload = (bool) Upvote::$plugin->getSettings()->preload;
 
-        // Return whether or not preloading is enabled
+        // Return whether preloading is enabled
         return $this->asJson([
             'enabled' => $preload
         ]);

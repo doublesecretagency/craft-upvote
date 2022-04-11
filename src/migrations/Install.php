@@ -42,10 +42,8 @@ class Install extends Migration
 
     /**
      * Creates the tables.
-     *
-     * @return void
      */
-    protected function createTables()
+    protected function createTables(): void
     {
         $this->createTable('{{%upvote_elementtotals}}', [
             'id'            => $this->primaryKey(),
@@ -82,10 +80,8 @@ class Install extends Migration
 
     /**
      * Creates the indexes.
-     *
-     * @return void
      */
-    protected function createIndexes()
+    protected function createIndexes(): void
     {
         $this->createIndex(null, '{{%upvote_elementtotals}}', ['elementId']);
         $this->createIndex(null, '{{%upvote_votelog}}',       ['elementId']);
@@ -93,10 +89,8 @@ class Install extends Migration
 
     /**
      * Adds the foreign keys.
-     *
-     * @return void
      */
-    protected function addForeignKeys()
+    protected function addForeignKeys(): void
     {
         $this->addForeignKey(null, '{{%upvote_elementtotals}}', ['elementId'], '{{%elements}}', ['id'], 'CASCADE');
         $this->addForeignKey(null, '{{%upvote_votelog}}',       ['elementId'], '{{%elements}}', ['id'], 'CASCADE');

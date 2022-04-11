@@ -13,9 +13,9 @@ namespace doublesecretagency\upvote\services;
 
 use Craft;
 use craft\base\Component;
+use craft\db\Query as CraftQuery;
 use craft\elements\User;
 use craft\helpers\Json;
-
 use doublesecretagency\upvote\Upvote;
 
 /**
@@ -25,16 +25,35 @@ use doublesecretagency\upvote\Upvote;
 class UpvoteService extends Component
 {
 
-    public $settings;
+    /**
+     * @var string Name of cookie containing the user history.
+     */
+    public string $userCookie = 'VoteHistory';
 
-    public $userCookie = 'VoteHistory';
-    public $userCookieLifespan = 315569260; // Lasts 10 years
-    public $anonymousHistory = [];
-    public $loggedInHistory = [];
-    public $history;
+    /**
+     * @var int Length of time until user history cookie expires.
+     */
+    public int $userCookieLifespan = 315569260; // Lasts 10 years
 
-    //
-    public function init()
+    /**
+     * @var array History of anonymous user.
+     */
+    public array $anonymousHistory = [];
+
+    /**
+     * @var array History of logged-in User.
+     */
+    public array $loggedInHistory = [];
+
+    /**
+     * @var array Alias of current history type.
+     */
+    public array $history = [];
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
     {
         // If login is required
         if (Upvote::$plugin->getSettings()->requireLogin) {
@@ -48,14 +67,10 @@ class UpvoteService extends Component
         parent::init();
     }
 
-    // Generate combined item key
-    public function setItemKey($elementId, $key, $separator = ':')
-    {
-        return $elementId.($key ? $separator.$key : '');
-    }
-
-    // Get history of logged-in user
-    public function getUserHistory()
+    /**
+     * Set history of logged-in user.
+     */
+    public function getUserHistory(): void
     {
         // If table has not been created yet, bail
         if (!Craft::$app->getDb()->tableExists('{{%upvote_userhistories}}')) {
@@ -74,8 +89,10 @@ class UpvoteService extends Component
         $this->loggedInHistory = Upvote::$plugin->upvote_query->userHistory($currentUser->id);
     }
 
-    // Get history of anonymous user
-    public function getAnonymousHistory()
+    /**
+     * Set history of anonymous user.
+     */
+    public function getAnonymousHistory(): void
     {
         // Get request
         $request = Craft::$app->getRequest();
@@ -106,17 +123,17 @@ class UpvoteService extends Component
 
     }
 
-    // Check if a key is valid
-    public function validKey($key)
-    {
-        return (null === $key || is_string($key) || is_numeric($key));
-    }
-
     // ========================================================================= //
 
     /**
+     * Compile an array of element's vote data.
+     *
+     * @param null|string $itemKey
+     * @param null|int $userVote
+     * @param bool $isAntivote
+     * @return null|array
      */
-    public function compileElementData($itemKey, $userVote = null, $isAntivote = false)
+    public function compileElementData(?string $itemKey, ?int $userVote = null, bool $isAntivote = false): ?array
     {
         // Get current user
         $currentUser = Craft::$app->user->getIdentity();
@@ -129,7 +146,7 @@ class UpvoteService extends Component
 
         // If no element ID, bail
         if (!$elementId) {
-            return false;
+            return null;
         }
 
         // Reassemble the remaining parts (in case the key contains a colon)
@@ -153,12 +170,15 @@ class UpvoteService extends Component
             'isAntivote' => $isAntivote,
         ];
 
+        /** @var Query $query */
+        $query = Upvote::$plugin->upvote_query;
+
         // Get element totals from BEFORE the vote is calculated
         $totals = [
-            'tally' => Upvote::$plugin->upvote_query->tally($elementId, $key),
-            'totalVotes' => Upvote::$plugin->upvote_query->totalVotes($elementId, $key),
-            'totalUpvotes' => Upvote::$plugin->upvote_query->totalUpvotes($elementId, $key),
-            'totalDownvotes' => Upvote::$plugin->upvote_query->totalDownvotes($elementId, $key),
+            'tally' => $query->tally($elementId, $key),
+            'totalVotes' => $query->totalVotes($elementId, $key),
+            'totalUpvotes' => $query->totalUpvotes($elementId, $key),
+            'totalDownvotes' => $query->totalDownvotes($elementId, $key),
         ];
 
         // If existing vote was removed
@@ -197,8 +217,13 @@ class UpvoteService extends Component
 
     // ========================================================================= //
 
-    // $userId can be valid user ID or UserModel
-    public function validateUserId(&$userId)
+    /**
+     * $userId could be a user ID or User object,
+     * this ensures the $userId is an integer.
+     *
+     * @param null|User|int $userId
+     */
+    public function validateUserId(null|User|int &$userId): void
     {
         // No user by default
         $user = null;
@@ -223,10 +248,40 @@ class UpvoteService extends Component
 
     // ========================================================================= //
 
-    // Does the plugin contain legacy data?
+    /**
+     * Generate combined item key.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @param string $separator
+     * @return string
+     */
+    public function setItemKey(int $elementId, ?string $key, string $separator = ':'): string
+    {
+        return $elementId.($key ? $separator.$key : '');
+    }
+
+    /**
+     * Whether a key is valid.
+     *
+     * @param null|string $key
+     * @return bool
+     */
+    public function validKey(?string $key): bool
+    {
+        return (null === $key || is_string($key) || is_numeric($key));
+    }
+
+    // ========================================================================= //
+
+    /**
+     * Whether the plugin contains legacy data.
+     *
+     * @return bool
+     */
     public function hasLegacyData(): bool
     {
-        return (new craft\db\Query())
+        return (new CraftQuery())
             ->select('[[totals.id]]')
             ->from('{{%upvote_elementtotals}} totals')
             ->where('[[totals.legacyTotal]] <> 0')

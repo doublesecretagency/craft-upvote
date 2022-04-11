@@ -11,16 +11,14 @@
 
 namespace doublesecretagency\upvote\services;
 
-use craft\helpers\Json;
-use yii\db\Expression;
-
-use Craft;
 use craft\base\Component;
+use craft\db\Query as CraftQuery;
 use craft\elements\db\ElementQuery;
-
+use craft\helpers\Json;
 use doublesecretagency\upvote\Upvote;
 use doublesecretagency\upvote\records\ElementTotal;
 use doublesecretagency\upvote\records\UserHistory;
+use yii\db\Expression;
 
 /**
  * Class Query
@@ -29,52 +27,80 @@ use doublesecretagency\upvote\records\UserHistory;
 class Query extends Component
 {
 
-    //
-    public function tally($elementId, $key = null): int
+    /**
+     * Get the cumulative vote value of a specified element.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @return int
+     */
+    public function tally(int $elementId, ?string $key = null): int
     {
-        // If key is falsey, force NULL
-        if (!$key) {
-            $key = null;
-        }
         // Get matching vote totals record
         $record = ElementTotal::findOne([
             'elementId' => $elementId,
-            'voteKey'   => $key,
+            'voteKey'   => ($key ?: null),
         ]);
+
         // If no record, return zero
         if (!$record) {
             return 0;
         }
+
         // Calculate and return total
         $subtotal = ($record->upvoteTotal - $record->downvoteTotal);
         return ($subtotal + $record->legacyTotal);
     }
 
-    // ========================================================================
+    // ========================================================================= //
 
-    //
-    public function totalVotes($elementId, $key = null): int
+    /**
+     * Get the total number of votes for a specified element.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @return int
+     */
+    public function totalVotes(int $elementId, ?string $key = null): int
     {
         $record = $this->_getRecord($elementId, $key);
         return ($record ? ($record->upvoteTotal + $record->downvoteTotal) : 0);
     }
 
-    //
-    public function totalUpvotes($elementId, $key = null): int
+    /**
+     * Get the total number of upvotes for a specified element.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @return int
+     */
+    public function totalUpvotes(int $elementId, ?string $key = null): int
     {
         $record = $this->_getRecord($elementId, $key);
-        return ($record ? $record->upvoteTotal : 0);
+        return ($record->upvoteTotal ?? 0);
     }
 
-    //
-    public function totalDownvotes($elementId, $key = null): int
+    /**
+     * Get the total number of downvotes for a specified element.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @return int
+     */
+    public function totalDownvotes(int $elementId, ?string $key = null): int
     {
         $record = $this->_getRecord($elementId, $key);
-        return ($record ? $record->downvoteTotal : 0);
+        return ($record->downvoteTotal ?? 0);
     }
 
-    // Get matching totals record
-    private function _getRecord($elementId, $key)
+    /**
+     * Get the totals record of a specified element.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @return null|ElementTotal
+     */
+    private function _getRecord(int $elementId, ?string $key): ?ElementTotal
     {
         return ElementTotal::findOne([
             'elementId' => $elementId,
@@ -82,15 +108,16 @@ class Query extends Component
         ]);
     }
 
-    // ========================================================================
+    // ========================================================================= //
 
     /**
      * Get the vote history of a specified element.
      *
      * @param int $elementId
+     * @param null|string $key
      * @return array
      */
-    public function elementHistory(int $elementId, $key = null): array
+    public function elementHistory(int $elementId, ?string $key = null): array
     {
         // Get the complete collection of voting records
         $allRecords = UserHistory::find()->all();
@@ -124,7 +151,7 @@ class Query extends Component
         return $elementHistory;
     }
 
-    // ========================================================================
+    // ========================================================================= //
 
     /**
      * Get the vote history of a specified user.
@@ -153,10 +180,10 @@ class Query extends Component
      * Optionally filter to a subset of votes, based on a specified key.
      *
      * @param int $userId
-     * @param string|false $keyFilter
+     * @param null|string $key
      * @return array
      */
-    public function userHistoryByKey(int $userId, $keyFilter = false): array
+    public function userHistoryByKey(int $userId, ?string $key = null): array
     {
         // Get complete user history
         $history = $this->userHistory($userId);
@@ -178,24 +205,24 @@ class Query extends Component
             // If the vote is using a unique key
             if ($hasKey) {
                 // Split element ID and key
-                list($elementId, $key) = explode(':', $item);
+                list($elementId, $k) = explode(':', $item);
             } else {
                 // Get element ID with no key
-                list($elementId, $key) = [$item, null];
+                list($elementId, $k) = [$item, null];
             }
 
             // Recompile history
-            $historyWithKeys[(string) $key][(int) $elementId] = $vote;
+            $historyWithKeys[(string) $k][(int) $elementId] = $vote;
 
         }
 
         // If not looking for a subset, return the whole thing
-        if (false === $keyFilter) {
+        if (null === $key) {
             return $historyWithKeys;
         }
 
         // Return a filtered subset of the history
-        return $historyWithKeys[$keyFilter] ?? [];
+        return $historyWithKeys[$key] ?? [];
     }
 
     /**
@@ -205,29 +232,34 @@ class Query extends Component
      *
      * @param int $userId
      * @param int $elementId
-     * @param string|false $key
+     * @param null|string $key
      * @return int
      */
-    public function userVote(int $userId, int $elementId, $key = false): int
+    public function userVote(int $userId, int $elementId, ?string $key = null): int
     {
-        // Get user's history with regards to specified key
+        // Get user's history in regard to specified key
         $keyHistory = $this->userHistoryByKey($userId, $key);
 
         // Return specific vote, or zero (0) if no vote exists
         return ($keyHistory[$elementId] ?? 0);
     }
 
-    // ========================================================================
+    // ========================================================================= //
 
-    //
-    public function orderByTally(ElementQuery $query, $key = null)
+    /**
+     * Sort the query by the highest voted elements.
+     *
+     * @param ElementQuery $query
+     * @param null|string $key
+     */
+    public function orderByTally(ElementQuery $query, ?string $key = null): void
     {
-        // Collect and sort elementIds
+        // Get and sort element IDs
         $elementIds = $this->_elementIdsByTally($key);
 
         // If no element IDs, bail
         if (!$elementIds) {
-            return false;
+            return;
         }
 
         // Match order to elementIds
@@ -235,12 +267,17 @@ class Query extends Component
         $query->orderBy = [new Expression("field([[elements.id]], {$ids}) desc")];
     }
 
-    //
-    private function _elementIdsByTally($key)
+    /**
+     * Get and sort element IDs.
+     *
+     * @param null|string $key
+     * @return array
+     */
+    private function _elementIdsByTally(?string $key): array
     {
-        // If key isn't valid, bail
+        // If key isn't valid, bail with empty array
         if (!Upvote::$plugin->upvote->validKey($key)) {
-            return false;
+            return [];
         }
 
         // Adjust conditions based on whether a key was provided
@@ -250,23 +287,38 @@ class Query extends Component
             $conditions = ['[[totals.voteKey]]' => $key];
         }
 
-        // Construct order SQL
-        $upvotes   = 'ifnull([[totals.upvoteTotal]], 0)';
-        $downvotes = 'ifnull([[totals.downvoteTotal]], 0)';
-        $legacy    = 'ifnull([[totals.legacyTotal]], 0)';
-        $order     = "({$upvotes} - {$downvotes} + {$legacy}) desc, [[elements.id]] desc";
+        // Compile dynamic `tally` field
+        $upvotes   = 'coalesce([[totals.upvoteTotal]], 0)';
+        $downvotes = 'coalesce([[totals.downvoteTotal]], 0)';
+        $legacy    = 'coalesce([[totals.legacyTotal]], 0)';
+        $tally = "({$upvotes} - {$downvotes} + {$legacy})";
+
+        // Order for subquery
+        $subqueryOrder = "[[tally]] desc, [[totals.elementId]] desc";
+
+        // Get all matching items from `totals` table
+        $subquery = (new CraftQuery())
+            ->select([
+                '[[totals.elementId]]',
+                "{$tally} as [[tally]]"
+            ])
+            ->from('{{%upvote_elementtotals}} totals')
+            ->where($conditions)
+            ->orderBy([new Expression($subqueryOrder)]);
+
+        // Order for main query
+        $queryOrder = 'coalesce([[subquery.tally]], 0), [[elements.id]] desc';
 
         // Join with elements table to sort by tally
-        $elementIds = (new craft\db\Query())
+        $elementIds = (new CraftQuery())
             ->select('[[elements.id]]')
             ->from('{{%elements}} elements')
-            ->where($conditions)
-            ->leftJoin('{{%upvote_elementtotals}} totals', '[[elements.id]] = [[totals.elementId]]')
-            ->orderBy([new Expression($order)])
+            ->leftJoin(['subquery' => $subquery], '[[elements.id]] = [[subquery.elementId]]')
+            ->orderBy([new Expression($queryOrder)])
             ->column();
 
-        // Return elementIds
-        return array_reverse($elementIds);
+        // Return element IDs in order of highest voted
+        return $elementIds;
     }
 
 }

@@ -1,17 +1,14 @@
-Upvote plugin for Craft CMS
-===========================
+<img align="left" src="https://plugins.doublesecretagency.com/upvote/images/icon.svg" alt="Plugin icon">
 
-Lets your users upvote/downvote, "like", or favorite any type of element.
+# Upvote plugin for Craft CMS
+
+**Lets your users upvote/downvote, "like", or favorite any type of element.**
+
+---
 
 ![](src/resources/img/example-heroes.png)
 
-***
-
->This version is for Craft 3. To install it, visit the Plugin Store in your site's Control Panel.
->
->For the Craft 2 version, see [doublesecretagency.com/plugins/upvote](https://www.doublesecretagency.com/plugins/upvote)
-
-***
+---
 
 ## Upvote & Downvote (similar to Stack Exchange)
 
@@ -80,10 +77,16 @@ Here's a screenshot of the plugin's settings page...
 
 To see some other ways that Upvote is flexible, check out the [full documentation...](https://www.doublesecretagency.com/plugins/upvote/docs)
 
-***
+---
 
-## Anything else?
+## Further Reading
 
-We've got other plugins too!
+If you haven't already, flip through the [complete plugin documentation](https://plugins.doublesecretagency.com/upvote/).
 
-Check out the full catalog at [doublesecretagency.com/plugins](https://www.doublesecretagency.com/plugins)
+And if you have any remaining questions, feel free to [reach out to us](https://www.doublesecretagency.com/contact) (via Discord is preferred).
+
+**On behalf of Double Secret Agency, thanks for checking out our plugin!** 🍺
+
+<p align="center">
+    <img width="130" src="https://www.doublesecretagency.com/resources/images/dsa-transparent.png" alt="Logo for Double Secret Agency">
+</p>

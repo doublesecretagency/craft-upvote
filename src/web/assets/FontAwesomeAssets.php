@@ -20,8 +20,10 @@ use craft\web\AssetBundle;
 class FontAwesomeAssets extends AssetBundle
 {
 
-    /** @inheritdoc */
-    public function init()
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
     {
         parent::init();
 

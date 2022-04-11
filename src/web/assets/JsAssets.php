@@ -12,7 +12,6 @@
 namespace doublesecretagency\upvote\web\assets;
 
 use craft\web\AssetBundle;
-
 use doublesecretagency\upvote\Upvote;
 
 /**
@@ -22,8 +21,10 @@ use doublesecretagency\upvote\Upvote;
 class JsAssets extends AssetBundle
 {
 
-    /** @inheritdoc */
-    public function init()
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
     {
         parent::init();
 

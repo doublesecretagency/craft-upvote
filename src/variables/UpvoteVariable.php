@@ -12,14 +12,16 @@
 namespace doublesecretagency\upvote\variables;
 
 use Craft;
+use craft\elements\db\ElementQuery;
+use craft\elements\User;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
-use craft\elements\db\ElementQuery;
-
 use doublesecretagency\upvote\Upvote;
 use doublesecretagency\upvote\web\assets\CssAssets;
-use doublesecretagency\upvote\web\assets\JsAssets;
 use doublesecretagency\upvote\web\assets\FontAwesomeAssets;
+use doublesecretagency\upvote\web\assets\JsAssets;
+use Twig\Markup;
+use yii\base\InvalidConfigException;
 
 /**
  * Class UpvoteVariable
@@ -28,67 +30,125 @@ use doublesecretagency\upvote\web\assets\FontAwesomeAssets;
 class UpvoteVariable
 {
 
+    /**
+     * Display formats.
+     */
     const CONTAINER = 'container';
     const NUMBER = 'number';
     const BOTH = 'both';
 
-    private $_disabled = [];
+    /**
+     * @var array List of disabled assets.
+     */
+    private array $_disabled = [];
 
-    private $_cssIncluded = false;
-    private $_jsIncluded  = false;
+    /**
+     * @var bool Whether the CSS assets have already been loaded.
+     */
+    private bool $_cssLoaded = false;
 
-    // ========================================================================
+    /**
+     * @var bool Whether the JavaScript assets have already been loaded.
+     */
+    private bool $_jsLoaded  = false;
 
-    //
-    public function elementHistory($elementId, $key = null): array
+    // ========================================================================= //
+
+    /**
+     * Get complete record of which users
+     * have voted on a particular element,
+     * and how they voted.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @return array
+     */
+    public function elementHistory(int $elementId, ?string $key = null): array
     {
         return Upvote::$plugin->upvote_query->elementHistory($elementId, $key);
     }
 
-    // ========================================================================
+    // ========================================================================= //
 
-    //
-    public function userHistory($userId = null): array
+    /**
+     * Get the vote history of specified user.
+     *
+     * @param null|User|int $userId
+     * @return array
+     */
+    public function userHistory(null|User|int $userId = null): array
     {
         // Ensure the user ID is valid (defaults to current user)
         Upvote::$plugin->upvote->validateUserId($userId);
-
+        // Get the vote history of specified user
         return Upvote::$plugin->upvote_query->userHistory($userId);
     }
 
-    //
-    public function userHistoryByKey($userId = null, $keyFilter = false): array
+    /**
+     * Get the vote history of specified user, filtered by specified key.
+     *
+     * @param null|User|int $userId
+     * @param null|string $key
+     * @return array
+     */
+    public function userHistoryByKey(null|User|int $userId = null, ?string $key = null): array
     {
         // Ensure the user ID is valid (defaults to current user)
         Upvote::$plugin->upvote->validateUserId($userId);
-
-        return Upvote::$plugin->upvote_query->userHistoryByKey($userId, $keyFilter);
+        // Get the vote history of specified user, filtered by specified key
+        return Upvote::$plugin->upvote_query->userHistoryByKey($userId, $key);
     }
 
-    //
-    public function userVote(int $userId, int $elementId, $key = null): int
+    /**
+     * Get the specific vote of a specific user for a specific element.
+     *
+     * @param int $userId
+     * @param int $elementId
+     * @param null|string $key
+     * @return int
+     */
+    public function userVote(int $userId, int $elementId, ?string $key = null): int
     {
         return Upvote::$plugin->upvote_query->userVote($userId, $elementId, $key);
     }
 
-    // ========================================================================
+    // ========================================================================= //
 
-    //
-    public function upvote($elementId, $key = null)
+    /**
+     * Display an upvote button.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @return Markup
+     */
+    public function upvote(int $elementId, ?string $key = null): Markup
     {
         return $this->_renderIcon(Upvote::UPVOTE, $elementId, $key);
     }
 
-    //
-    public function downvote($elementId, $key = null)
+    /**
+     * Display a downvote button.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @return Markup
+     */
+    public function downvote(int $elementId, ?string $key = null): Markup
     {
         return $this->_renderIcon(Upvote::DOWNVOTE, $elementId, $key);
     }
 
-    // ========================================================================
+    // ========================================================================= //
 
-    //
-    public function tally($elementId, $key = null, $format = self::CONTAINER)
+    /**
+     * Display cumulative vote tally for specified element.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @param string $format
+     * @return int|Markup
+     */
+    public function tally(int $elementId, ?string $key = null, string $format = self::CONTAINER): int|Markup
     {
         // Get value of element
         $value = $this->_getValue('tally', $elementId, $key, $format);
@@ -102,8 +162,15 @@ class UpvoteVariable
         return $this->_renderNumber('upvote-tally', $elementId, $key, $value);
     }
 
-    // Output total votes of element
-    public function totalVotes($elementId, $key = null, $format = self::CONTAINER)
+    /**
+     * Display total votes of specified element.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @param string $format
+     * @return int|Markup
+     */
+    public function totalVotes(int $elementId, ?string $key = null, string $format = self::CONTAINER): int|Markup
     {
         // Get value of element
         $value = $this->_getValue('totalVotes', $elementId, $key, $format);
@@ -117,8 +184,15 @@ class UpvoteVariable
         return $this->_renderNumber('upvote-total-votes', $elementId, $key, $value);
     }
 
-    // Output total upvotes of element
-    public function totalUpvotes($elementId, $key = null, $format = self::CONTAINER)
+    /**
+     * Display total upvotes of specified element.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @param string $format
+     * @return int|Markup
+     */
+    public function totalUpvotes(int $elementId, ?string $key = null, string $format = self::CONTAINER): int|Markup
     {
         // Get value of element
         $value = $this->_getValue('totalUpvotes', $elementId, $key, $format);
@@ -132,8 +206,15 @@ class UpvoteVariable
         return $this->_renderNumber('upvote-total-upvotes', $elementId, $key, $value);
     }
 
-    // Output total downvotes of element
-    public function totalDownvotes($elementId, $key = null, $format = self::CONTAINER)
+    /**
+     * Display total downvotes of specified element.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @param string $format
+     * @return int|Markup
+     */
+    public function totalDownvotes(int $elementId, ?string $key = null, string $format = self::CONTAINER): int|Markup
     {
         // Get value of element
         $value = $this->_getValue('totalDownvotes', $elementId, $key, $format);
@@ -147,36 +228,59 @@ class UpvoteVariable
         return $this->_renderNumber('upvote-total-downvotes', $elementId, $key, $value);
     }
 
-    // ========================================================================
+    // ========================================================================= //
 
-    //
-    private function _numericFormat($format): bool
-    {
-        // Whether we need the numeric value
-        return in_array($format, [static::NUMBER, static::BOTH]);
-    }
-
-    //
-    private function _getValue($method, $elementId, $key, $format)
+    /**
+     * Get value inside the container.
+     *
+     * @param string $method
+     * @param int $elementId
+     * @param null|string $key
+     * @param string $format
+     * @return int|string
+     * @throws InvalidConfigException
+     */
+    private function _getValue(string $method, int $elementId, ?string $key, string $format): int|string
     {
         // If container format, ensure JS gets loaded
         if (self::CONTAINER === $format) {
             $this->_includeJs();
         }
 
-        // Return the numeric value
+        // If a numeric format was requested
         if ($this->_numericFormat($format)) {
+            // Return the numeric value
             return Upvote::$plugin->upvote_query->{$method}($elementId, $key);
         }
 
-        // Default to non-breaking space
+        // Default to a non-breaking space
         return '&nbsp;';
     }
 
-    // ========================================================================
+    /**
+     * Whether we need the numeric value.
+     *
+     * @param string $format
+     * @return bool
+     */
+    private function _numericFormat(string $format): bool
+    {
+        // Return whether we need the numeric value
+        return in_array($format, [static::NUMBER, static::BOTH]);
+    }
 
-    //
-    private function _renderNumber($class, $elementId, $key, $value)
+    // ========================================================================= //
+
+    /**
+     * Render the Twig Markup of a number container.
+     *
+     * @param string $class
+     * @param int $elementId
+     * @param null|string $key
+     * @param int|string $value
+     * @return Markup
+     */
+    private function _renderNumber(string $class, int $elementId, ?string $key, int|string $value): Markup
     {
         // Get Upvote service
         $upvote = Upvote::$plugin->upvote;
@@ -195,8 +299,16 @@ class UpvoteVariable
         return Template::raw($html);
     }
 
-    //
-    private function _renderIcon($vote, $elementId, $key)
+    /**
+     * Render the Twig Markup for a particular icon.
+     *
+     * @param string $vote
+     * @param int $elementId
+     * @param null|string $key
+     * @return Markup
+     * @throws InvalidConfigException
+     */
+    private function _renderIcon(string $vote, int $elementId, ?string $key): Markup
     {
         $this->_includeCss();
         // Get Upvote service
@@ -224,8 +336,18 @@ class UpvoteVariable
         return Template::raw($span);
     }
 
-    //
-    public function jsUpvote($elementId, $key = null, $prefix = false)
+    // ========================================================================= //
+
+    /**
+     * Get the JavaScript command to perform an upvote.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @param null|string $prefix
+     * @return null|string
+     * @throws InvalidConfigException
+     */
+    public function jsUpvote(int $elementId, ?string $key = null, ?string $prefix = null): ?string
     {
         if (!Upvote::$plugin->upvote->validKey($key)) {
             return false;
@@ -235,22 +357,36 @@ class UpvoteVariable
         return ($prefix?'javascript:':'')."upvote.upvote($elementId, $key)";
     }
 
-    //
-    public function jsDownvote($elementId, $key = null, $prefix = false)
+    /**
+     * Get the JavaScript command to perform a downvote.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @param null|string $prefix
+     * @return null|string
+     * @throws InvalidConfigException
+     */
+    public function jsDownvote(int $elementId, ?string $key = null, ?string $prefix = null): ?string
     {
         if (!Upvote::$plugin->upvote->validKey($key)) {
-            return false;
+            return null;
         }
         $this->_includeJs();
         $key = ($key ? "'$key'" : "null");
         return ($prefix?'javascript:':'')."upvote.downvote($elementId, $key)";
     }
 
-    // Include CSS
-    private function _includeCss()
+    // ========================================================================= //
+
+    /**
+     * Include the necessary CSS assets.
+     *
+     * @throws InvalidConfigException
+     */
+    private function _includeCss(): void
     {
-        // If CSS has been included, bail
-        if ($this->_cssIncluded) {
+        // If CSS has been loaded, bail
+        if ($this->_cssLoaded) {
             return;
         }
 
@@ -269,14 +405,18 @@ class UpvoteVariable
         $view->registerAssetBundle(CssAssets::class);
 
         // Mark CSS as included
-        $this->_cssIncluded = true;
+        $this->_cssLoaded = true;
     }
 
-    // Include JS
-    private function _includeJs()
+    /**
+     * Include the necessary JS assets.
+     *
+     * @throws InvalidConfigException
+     */
+    private function _includeJs(): void
     {
-        // If JS has been included, bail
-        if ($this->_jsIncluded) {
+        // If JS has been loaded, bail
+        if ($this->_jsLoaded) {
             return;
         }
 
@@ -300,29 +440,42 @@ class UpvoteVariable
         $view->registerJs('upvote.actionUrl = "'.UrlHelper::actionUrl().'";', $view::POS_END);
 
         // Mark JS as included
-        $this->_jsIncluded = true;
+        $this->_jsLoaded = true;
     }
 
-    // ========================================================================
+    // ========================================================================= //
 
-    // Customize icons
-    public function setIcons($iconMap = [])
+    /**
+     * Set new custom icons for upvote & downvote buttons.
+     *
+     * @param array $iconMap
+     */
+    public function setIcons(array $iconMap = []): void
     {
-        return Upvote::$plugin->upvote_vote->setIcons($iconMap);
+        Upvote::$plugin->upvote_vote->setIcons($iconMap);
     }
 
-    // Sort by "highest rated"
-    public function sort(ElementQuery $elements, $key = null)
+    /**
+     * Sort query by "highest rated".
+     *
+     * @param ElementQuery $elements
+     * @param null|string $key
+     */
+    public function sort(ElementQuery $elements, ?string $key = null): void
     {
         Upvote::$plugin->upvote_query->orderByTally($elements, $key);
     }
 
-    // Disable native CSS and/or JS
-    public function disable($resources = [])
+    /**
+     * Disable native CSS and/or JS.
+     *
+     * @param string|array $resources
+     */
+    public function disable(string|array $resources = []): void
     {
         // If not a string or array, bail
         if (!is_string($resources) && !is_array($resources)) {
-            return false;
+            return;
         }
         // If string, convert to array
         if (is_string($resources)) {
@@ -331,10 +484,14 @@ class UpvoteVariable
         $this->_disabled = array_map('strtolower', $resources);
     }
 
-    // ========================================================================
+    // ========================================================================= //
 
-    // Whether the plugin contains legacy data
-    public function hasLegacyData()
+    /**
+     * Whether the plugin contains legacy data.
+     *
+     * @return bool
+     */
+    public function hasLegacyData(): bool
     {
         return Upvote::$plugin->upvote->hasLegacyData();
     }

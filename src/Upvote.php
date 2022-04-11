@@ -11,21 +11,20 @@
 
 namespace doublesecretagency\upvote;
 
-use yii\base\Event;
-
 use Craft;
 use craft\base\Element;
+use craft\base\Model;
 use craft\base\Plugin;
 use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\services\Plugins;
 use craft\web\twig\variables\CraftVariable;
-
 use doublesecretagency\upvote\models\Settings;
-use doublesecretagency\upvote\services\UpvoteService;
 use doublesecretagency\upvote\services\Query;
+use doublesecretagency\upvote\services\UpvoteService;
 use doublesecretagency\upvote\services\Vote;
 use doublesecretagency\upvote\variables\UpvoteVariable;
+use yii\base\Event;
 
 /**
  * Class Upvote
@@ -34,33 +33,51 @@ use doublesecretagency\upvote\variables\UpvoteVariable;
 class Upvote extends Plugin
 {
 
-    /** Actual vote values */
+    /**
+     * Actual vote values.
+     */
     const UPVOTE   =  1;
     const DOWNVOTE = -1;
 
-    /** @event VoteEvent The event that is triggered before a vote is cast. */
+    /**
+     * @event VoteEvent The event that is triggered before a vote is cast.
+     */
     const EVENT_BEFORE_VOTE = 'beforeVote';
 
-    /** @event VoteEvent The event that is triggered after a vote is cast. */
+    /**
+     * @event VoteEvent The event that is triggered after a vote is cast.
+     */
     const EVENT_AFTER_VOTE = 'afterVote';
 
-    /** @event UnvoteEvent The event that is triggered before a vote is removed. */
+    /**
+     * @event UnvoteEvent The event that is triggered before a vote is removed.
+     */
     const EVENT_BEFORE_UNVOTE = 'beforeUnvote';
 
-    /** @event UnvoteEvent The event that is triggered after a vote is removed. */
+    /**
+     * @event UnvoteEvent The event that is triggered after a vote is removed.
+     */
     const EVENT_AFTER_UNVOTE = 'afterUnvote';
 
-    /** @var Plugin  $plugin  Self-referential plugin property. */
-    public static $plugin;
+    /**
+     * @var Upvote Self-referential plugin property.
+     */
+    public static Upvote $plugin;
 
-    /** @var bool  $hasCpSettings  The plugin has a settings page. */
-    public $hasCpSettings = true;
+    /**
+     * @inheritdoc
+     */
+    public bool $hasCpSettings = true;
 
-    /** @var bool  $schemaVersion  Current schema version of the plugin. */
-    public $schemaVersion = '2.0.0';
+    /**
+     * @inheritdoc
+     */
+    public string $schemaVersion = '2.0.0';
 
-    /** @inheritDoc */
-    public function init()
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
     {
         parent::init();
         self::$plugin = $this;
@@ -80,20 +97,16 @@ class Upvote extends Plugin
             Plugins::class,
             Plugins::EVENT_AFTER_LOAD_PLUGINS,
             function () {
-
                 // If no current user
                 if (!Craft::$app->user->getIdentity()) {
                     return;
                 }
-
                 // If control panel, bail
                 if (Craft::$app->getRequest()->getIsCpRequest()) {
                     return;
                 }
-
                 // Load user history
                 $this->upvote->getUserHistory();
-
             }
         );
 
@@ -108,15 +121,22 @@ class Upvote extends Plugin
         );
 
         // Register element index columns
-        Event::on(Element::class, Element::EVENT_REGISTER_TABLE_ATTRIBUTES, function(RegisterElementTableAttributesEvent $event) {
-            $event->tableAttributes['upvote_voteTally']      = ['label' => \Craft::t('upvote', 'Vote Tally')];
-            $event->tableAttributes['upvote_totalVotes']     = ['label' => \Craft::t('upvote', 'Total Votes')];
-            $event->tableAttributes['upvote_totalUpvotes']   = ['label' => \Craft::t('upvote', 'Total Upvotes')];
-            $event->tableAttributes['upvote_totalDownvotes'] = ['label' => \Craft::t('upvote', 'Total Downvotes')];
-        });
+        Event::on(
+            Element::class,
+            Element::EVENT_REGISTER_TABLE_ATTRIBUTES,
+            function (RegisterElementTableAttributesEvent $event) {
+                $event->tableAttributes['upvote_voteTally']      = ['label' => Craft::t('upvote', 'Vote Tally')];
+                $event->tableAttributes['upvote_totalVotes']     = ['label' => Craft::t('upvote', 'Total Votes')];
+                $event->tableAttributes['upvote_totalUpvotes']   = ['label' => Craft::t('upvote', 'Total Upvotes')];
+                $event->tableAttributes['upvote_totalDownvotes'] = ['label' => Craft::t('upvote', 'Total Downvotes')];
+            }
+        );
 
         // Register element index column HTML
-        Event::on(Element::class, Element::EVENT_SET_TABLE_ATTRIBUTE_HTML, function(SetElementTableAttributeHtmlEvent $event) {
+        Event::on(
+            Element::class,
+            Element::EVENT_SET_TABLE_ATTRIBUTE_HTML,
+            function(SetElementTableAttributeHtmlEvent $event) {
             $element = $event->sender;
             switch ($event->attribute) {
                 case 'upvote_voteTally':
@@ -141,17 +161,17 @@ class Upvote extends Plugin
     }
 
     /**
-     * @return Settings  Plugin settings model.
+     * @inheritdoc
      */
-    protected function createSettingsModel()
+    protected function createSettingsModel(): ?Model
     {
         return new Settings();
     }
 
     /**
-     * @return string  The fully rendered settings template.
+     * @inheritdoc
      */
-    protected function settingsHtml(): string
+    protected function settingsHtml(): ?string
     {
         $view = Craft::$app->getView();
         $overrideKeys = array_keys(Craft::$app->getConfig()->getConfigFromFile('upvote'));

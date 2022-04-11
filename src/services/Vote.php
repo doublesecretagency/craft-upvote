@@ -11,18 +11,17 @@
 
 namespace doublesecretagency\upvote\services;
 
-use craft\helpers\Json;
-use yii\base\Event;
-use yii\web\Cookie;
-
 use Craft;
 use craft\base\Component;
-
+use craft\helpers\Json;
 use doublesecretagency\upvote\Upvote;
 use doublesecretagency\upvote\events\VoteEvent;
+use doublesecretagency\upvote\models\Settings;
 use doublesecretagency\upvote\records\ElementTotal;
-use doublesecretagency\upvote\records\VoteLog;
 use doublesecretagency\upvote\records\UserHistory;
+use doublesecretagency\upvote\records\VoteLog;
+use yii\base\Event;
+use yii\web\Cookie;
 
 /**
  * Class Vote
@@ -31,32 +30,39 @@ use doublesecretagency\upvote\records\UserHistory;
 class Vote extends Component
 {
 
-    public $upvoteIcon;
-    public $downvoteIcon;
+    /**
+     * @var string Icon for up vote.
+     */
+    public string $upvoteIcon = 'upvote';
 
-    public $alreadyVoted = 'You have already voted on this element.';
+    /**
+     * @var string Icon for down vote.
+     */
+    public string $downvoteIcon = 'downvote';
 
-    //
-    public function init()
+    /**
+     * @var string Message that user has already voted.
+     */
+    public string $alreadyVoted = 'You have already voted on this element.';
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
     {
-        $this->_loadIcons();
+        // Load icons
+        $this->setIcons([
+            'up'   => $this->_fa('caret-up'),
+            'down' => $this->_fa('caret-down')
+        ]);
     }
 
-    //
-    private function _loadIcons()
-    {
-        $this->upvoteIcon   = $this->_fa('caret-up');
-        $this->downvoteIcon = $this->_fa('caret-down');
-    }
-
-    //
-    private function _fa($iconType)
-    {
-        return '<i class="fa fa-'.$iconType.' fa-2x"></i>';
-    }
-
-    //
-    public function setIcons($iconMap = [])
+    /**
+     * Set new icons to use.
+     *
+     * @param array $iconMap
+     */
+    public function setIcons(array $iconMap = []): void
     {
         foreach ($iconMap as $type => $html) {
             switch ($type) {
@@ -66,24 +72,48 @@ class Vote extends Component
         }
     }
 
+    /**
+     * Generate complete Font Awesome icon.
+     *
+     * @param string $iconType
+     * @return string
+     */
+    private function _fa(string $iconType): string
+    {
+        return '<i class="fa fa-'.$iconType.' fa-2x"></i>';
+    }
+
     // ========================================================================= //
 
-    //
-    public function castVote($elementId, $key, $vote, $userId = null)
+    /**
+     * Cast a vote on the specified element.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @param int $vote
+     * @param null|int $userId
+     * @return null|array|string
+     */
+    public function castVote(int $elementId, ?string $key, int $vote, ?int $userId = null): null|array|string
     {
-        // Get settings
+        /** @var Settings $settings */
         $settings = Upvote::$plugin->getSettings();
 
+        /** @var UpvoteService $upvote */
+        $upvote = Upvote::$plugin->upvote;
+
         // Ensure the user ID is valid
-        Upvote::$plugin->upvote->validateUserId($userId);
+        $upvote->validateUserId($userId);
 
         // Prep return data
-        $itemKey = Upvote::$plugin->upvote->setItemKey($elementId, $key);
-        $returnData = Upvote::$plugin->upvote->compileElementData($itemKey, $vote);
-        $returnData['vote'] = $vote; // DEPRECATED: REMOVE IN NEXT MAJOR VERSION
+        $itemKey = $upvote->setItemKey($elementId, $key);
+        $returnData = $upvote->compileElementData($itemKey, $vote);
+
+        // DEPRECATED: REMOVE IN NEXT MAJOR VERSION
+        $returnData['vote'] = $vote;
 
         // Update original history
-        Upvote::$plugin->upvote->history[$itemKey] = $vote;
+        $upvote->history[$itemKey] = $vote;
 
         // Trigger event before a vote is cast
         if (Event::hasHandlers(Upvote::class, Upvote::EVENT_BEFORE_VOTE)) {
@@ -116,15 +146,25 @@ class Vote extends Component
         return $returnData;
     }
 
-    //
-    public function removeVote($elementId, $key, $userId = null)
+    /**
+     * Remove a vote on the specified element.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @param null|int $userId
+     * @return null|array|string
+     */
+    public function removeVote(int $elementId, ?string $key, ?int $userId = null): null|array|string
     {
+        /** @var UpvoteService $upvote */
+        $upvote = Upvote::$plugin->upvote;
+
         // Ensure the user ID is valid
-        Upvote::$plugin->upvote->validateUserId($userId);
+        $upvote->validateUserId($userId);
 
         // Prep return data
-        $itemKey = Upvote::$plugin->upvote->setItemKey($elementId, $key);
-        $returnData = Upvote::$plugin->upvote->compileElementData($itemKey, null, true);
+        $itemKey = $upvote->setItemKey($elementId, $key);
+        $returnData = $upvote->compileElementData($itemKey, null, true);
 
         // Get original vote
         $originalVote = $returnData['userVote'];
@@ -153,7 +193,7 @@ class Vote extends Component
         $this->_updateVoteLog($elementId, $key, $antivote, $userId, true);
 
         // Remove vote from user history
-        unset(Upvote::$plugin->upvote->history[$itemKey]);
+        unset($upvote->history[$itemKey]);
 
         // Trigger event after a vote is removed
         if (Event::hasHandlers(Upvote::class, Upvote::EVENT_AFTER_UNVOTE)) {
@@ -166,8 +206,16 @@ class Vote extends Component
 
     // ========================================================================= //
 
-    //
-    private function _updateUserHistoryDatabase($elementId, $key, $vote, $userId)
+    /**
+     * Update the user's vote history in the database.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @param int $vote
+     * @param int $userId
+     * @return bool
+     */
+    private function _updateUserHistoryDatabase(int $elementId, ?string $key, int $vote, int $userId): bool
     {
         // If user is not logged in, return false
         if (!$userId) {
@@ -203,25 +251,45 @@ class Vote extends Component
         return $record->save();
     }
 
-    //
-    private function _updateUserHistoryCookie($elementId, $key, $vote)
+    /**
+     * Update the user's vote history cookie.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @param int $vote
+     * @return bool
+     */
+    private function _updateUserHistoryCookie(int $elementId, ?string $key, int $vote): bool
     {
-        // Get anonymous history
-        $history =& Upvote::$plugin->upvote->anonymousHistory;
-        $item = Upvote::$plugin->upvote->setItemKey($elementId, $key);
-        // Cast vote
-        $history[$item] = $vote;
+        /** @var UpvoteService $upvote */
+        $upvote = Upvote::$plugin->upvote;
+
+        // Compile the item key
+        $item = $upvote->setItemKey($elementId, $key);
+
+        // Cast the anonymous vote
+        $upvote->anonymousHistory[$item] = $vote;
+
+        // Save the cookie
         $this->saveUserHistoryCookie();
+
+        // Always return true
         return true;
     }
 
-    //
-    public function saveUserHistoryCookie()
+    /**
+     * Save the current anonymous history to a cookie.
+     */
+    public function saveUserHistoryCookie(): void
     {
+        /** @var UpvoteService $upvote */
+        $upvote = Upvote::$plugin->upvote;
+
         // Get cookie settings
-        $cookieName = Upvote::$plugin->upvote->userCookie;
-        $history    = Upvote::$plugin->upvote->anonymousHistory;
-        $lifespan   = Upvote::$plugin->upvote->userCookieLifespan;
+        $cookieName = $upvote->userCookie;
+        $history    = $upvote->anonymousHistory;
+        $lifespan   = $upvote->userCookieLifespan;
+
         // Set cookie
         $cookie = new Cookie();
         $cookie->name = $cookieName;
@@ -230,8 +298,16 @@ class Vote extends Component
         Craft::$app->getResponse()->getCookies()->add($cookie);
     }
 
-    //
-    private function _updateElementTotals($elementId, $key, $vote, $antivote = false)
+    /**
+     * Update the Element Total in the database.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @param int $vote
+     * @param bool $antivote
+     * @return bool
+     */
+    private function _updateElementTotals(int $elementId, ?string $key, int $vote, bool $antivote = false): bool
     {
         // Load existing element totals
         $record = ElementTotal::findOne([
@@ -288,12 +364,21 @@ class Vote extends Component
         return $record->save();
     }
 
-    //
-    private function _updateVoteLog($elementId, $key, $vote, $userId, $unvote = false)
+    /**
+     * Update the Vote Log in the database.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @param int $vote
+     * @param int $userId
+     * @param bool $unvote
+     * @return bool
+     */
+    private function _updateVoteLog(int $elementId, ?string $key, int $vote, int $userId, bool $unvote = false): bool
     {
         // If not keeping a vote log, bail
         if (!Upvote::$plugin->getSettings()->keepVoteLog) {
-            return false;
+            return true;
         }
 
         // Log vote
@@ -304,35 +389,49 @@ class Vote extends Component
         $record->ipAddress = $_SERVER['REMOTE_ADDR'];
         $record->voteValue = $vote;
         $record->wasUnvote = (int) $unvote;
-        $record->save();
+        return $record->save();
     }
 
-    //
-    private function _removeVoteFromCookie($elementId, $key)
-    {
-        // Get user history
-        $history =& Upvote::$plugin->upvote->anonymousHistory;
+    // ========================================================================= //
 
-        // If no user history, bail
-        if (!$history) {
-            return false;
+    /**
+     * Remove a vote from the anonymous history cookie.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     */
+    private function _removeVoteFromCookie(int $elementId, ?string $key): void
+    {
+        /** @var UpvoteService $upvote */
+        $upvote = Upvote::$plugin->upvote;
+
+        // If no anonymous history exists, bail
+        if (!$upvote->anonymousHistory) {
+            return;
         }
 
         // Get item key
-        $item = Upvote::$plugin->upvote->setItemKey($elementId, $key);
+        $item = $upvote->setItemKey($elementId, $key);
 
-        // If item doesn't exist in history, bail
-        if (!isset($history[$item])) {
-            return false;
+        // If item doesn't exist in anonymous history, bail
+        if (!isset($upvote->anonymousHistory[$item])) {
+            return;
         }
 
-        // Remove item from history
-        unset($history[$item]);
+        // Remove item from anonymous history
+        unset($upvote->anonymousHistory[$item]);
         $this->saveUserHistoryCookie();
     }
 
-    //
-    private function _removeVoteFromDb($elementId, $key, $userId)
+    /**
+     * Remove a vote from the User History in the database.
+     *
+     * @param int $elementId
+     * @param null|string $key
+     * @param null|int $userId
+     * @return bool
+     */
+    private function _removeVoteFromDb(int $elementId, ?string $key, ?int $userId): bool
     {
         // If no user ID, bail
         if (!$userId) {
@@ -361,7 +460,7 @@ class Vote extends Component
         // Remove item from history
         unset($historyDb[$item]);
         $record->history = $historyDb;
-        $record->save();
+        return $record->save();
     }
 
 }
