@@ -2,7 +2,7 @@
     "name": "doublesecretagency/craft-upvote",
     "description": "Lets your users upvote/downvote, \"like\", or favorite any type of element.",
     "type": "craft-plugin",
-    "version": "2.2.2",
+    "version": "2.3.0",
     "keywords": [
         "craft",
         "cms",
@@ -24,7 +24,7 @@
         }
     ],
     "require": {
-        "craftcms/cms": "^3.5",
+        "craftcms/cms": "^4.0.0-beta",
         "fortawesome/font-awesome": "4.7.0"
     },
     "autoload": {
