@@ -43,11 +43,11 @@ You can easily see what votes have been cast by a particular user...
 craft.upvote.userHistory()
 ```
 
-Read more about using the [user voting history](https://www.doublesecretagency.com/plugins/upvote/docs/user-vote-history). 
+Read more about using the [user voting history](https://plugins.doublesecretagency.com/upvote/user-vote-history/). 
 
 ## Customize Icons
 
-It's easy to customize your icons. You can either [adjust the CSS](https://www.doublesecretagency.com/plugins/upvote/docs/customize-your-css), or [replace the icons entirely](https://www.doublesecretagency.com/plugins/upvote/docs/customize-your-icons).
+It's easy to customize your icons. You can either [adjust the CSS](https://plugins.doublesecretagency.com/upvote/customize-your-css/), or [replace the icons entirely](https://plugins.doublesecretagency.com/upvote/customize-your-icons/).
 
 ```twig
 {% do craft.upvote.setIcons({
@@ -67,7 +67,7 @@ Once your users have cast votes, you'll want to know which items are the most po
 {% do craft.upvote.sort(heroes) %}
 ```
 
-This will grab the list of elements normally, then sort them by [highest voted](https://www.doublesecretagency.com/plugins/upvote/docs/sort-by-highest-voted).
+This will grab the list of elements normally, then sort them by [highest voted](https://plugins.doublesecretagency.com/upvote/sort-by-highest-voted/).
 
 ## Settings
 
@@ -75,7 +75,7 @@ Here's a screenshot of the plugin's settings page...
 
 ![](src/resources/img/example-settings.png)
 
-To see some other ways that Upvote is flexible, check out the [full documentation...](https://www.doublesecretagency.com/plugins/upvote/docs)
+To see some other ways that Upvote is flexible, check out the [full documentation...](https://plugins.doublesecretagency.com/upvote/)
 
 ---
 
