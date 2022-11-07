@@ -212,10 +212,10 @@ class Vote extends Component
      * @param int $elementId
      * @param null|string $key
      * @param int $vote
-     * @param int $userId
+     * @param null|int $userId
      * @return bool
      */
-    private function _updateUserHistoryDatabase(int $elementId, ?string $key, int $vote, int $userId): bool
+    private function _updateUserHistoryDatabase(int $elementId, ?string $key, int $vote, ?int $userId): bool
     {
         // If user is not logged in, return false
         if (!$userId) {
@@ -370,11 +370,11 @@ class Vote extends Component
      * @param int $elementId
      * @param null|string $key
      * @param int $vote
-     * @param int $userId
+     * @param null|int $userId
      * @param bool $unvote
      * @return bool
      */
-    private function _updateVoteLog(int $elementId, ?string $key, int $vote, int $userId, bool $unvote = false): bool
+    private function _updateVoteLog(int $elementId, ?string $key, int $vote, ?int $userId, bool $unvote = false): bool
     {
         // If not keeping a vote log, bail
         if (!Upvote::$plugin->getSettings()->keepVoteLog) {
