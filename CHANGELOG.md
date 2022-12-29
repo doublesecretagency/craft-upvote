@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.1 - 2022-12-29
+
+### Fixed
+- Fixed typed parameter bug in anonymous voting. (thanks @bilnader)
+
 ## 2.3.0 - 2022-04-12
 
 ### Added
