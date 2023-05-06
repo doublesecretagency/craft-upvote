@@ -95,7 +95,8 @@ class Upvote extends Plugin
 
         // Load logged-in user history (if relevant)
         Craft::$app->on(
-            Application::EVENT_INIT, function() {
+            Application::EVENT_INIT,
+            function () {
                 // If no current user
                 if (!Craft::$app->user->getIdentity()) {
                     return;
