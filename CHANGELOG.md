@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.3.2 - 2023-05-06
 
 ### Fixed
 - Fixed warning from element queries running before Craft was ready. (thanks @engram-design)
