@@ -32,6 +32,7 @@ module.exports = {
             {
                 text: 'How It Works',
                 items: [
+                    {text: 'Using "Favorites"', link: '/favorites/'},
                     {text: 'Display voting arrows', link: '/display-voting-arrows/'},
                     {text: 'Customize your icons', link: '/customize-your-icons/'},
                     {text: 'Customize your CSS', link: '/customize-your-css/'},
@@ -60,6 +61,7 @@ module.exports = {
         sidebar: {
             '/': [
                 'getting-started',
+                'favorites',
                 'display-voting-arrows',
                 'customize-your-icons',
                 'customize-your-css',
