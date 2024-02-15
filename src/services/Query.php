@@ -251,6 +251,7 @@ class Query extends Component
      *
      * @param ElementQuery $query
      * @param null|string $key
+     * @param bool $useQueryIds
      */
     public function orderByTally(ElementQuery $query, ?string $key = null, ?bool $useQueryIds = true): void
     {
@@ -271,6 +272,8 @@ class Query extends Component
      * Get and sort element IDs.
      *
      * @param null|string $key
+     * @param ElementQuery $query
+     * @param bool $useQueryIds
      * @return array
      */
     private function _elementIdsByTally(?string $key, ElementQuery $query, bool $useQueryIds): array

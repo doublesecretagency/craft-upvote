@@ -460,6 +460,7 @@ class UpvoteVariable
      *
      * @param ElementQuery $elements
      * @param null|string $key
+     * @param bool $useQueryIds
      */
     public function sort(ElementQuery $elements, ?string $key = null, ?bool $useQueryIds = true): void
     {
