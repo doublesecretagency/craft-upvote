@@ -252,10 +252,10 @@ class Query extends Component
      * @param ElementQuery $query
      * @param null|string $key
      */
-    public function orderByTally(ElementQuery $query, ?string $key = null): void
+    public function orderByTally(ElementQuery $query, ?string $key = null, ?bool $useQueryIds = true): void
     {
         // Get and sort element IDs
-        $elementIds = $this->_elementIdsByTally($key);
+        $elementIds = $this->_elementIdsByTally($key, $query, $useQueryIds);
 
         // If no element IDs, bail
         if (!$elementIds) {
@@ -273,12 +273,17 @@ class Query extends Component
      * @param null|string $key
      * @return array
      */
-    private function _elementIdsByTally(?string $key): array
+    private function _elementIdsByTally(?string $key, ElementQuery $query, bool $useQueryIds): array
     {
         // If key isn't valid, bail with empty array
         if (!Upvote::$plugin->upvote->validKey($key)) {
             return [];
         }
+				
+				if($useQueryIds) {
+					$queryClone = clone $query;
+					$ids = $queryClone->ids();
+				}
 
         // Adjust conditions based on whether a key was provided
         if (null === $key) {
@@ -313,12 +318,16 @@ class Query extends Component
         $elementIds = (new CraftQuery())
             ->select('[[elements.id]]')
             ->from('{{%elements}} elements')
+	          ->where(['[[elements.type]]' => $query->elementType])
             ->leftJoin(['subquery' => $subquery], '[[elements.id]] = [[subquery.elementId]]')
-            ->orderBy([new Expression($queryOrder)])
-            ->column();
-
+            ->orderBy([new Expression($queryOrder)]);
+				
+        if($useQueryIds) {
+            $elementIds->andWhere(['[[elements.id]]' => $ids]);
+        }
+	
         // Return element IDs in order of highest voted
-        return $elementIds;
+        return $elementIds->column();
     }
 
 }
