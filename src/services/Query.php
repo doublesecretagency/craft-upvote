@@ -280,10 +280,10 @@ class Query extends Component
             return [];
         }
 				
-				if($useQueryIds) {
-					$queryClone = clone $query;
-					$ids = $queryClone->ids();
-				}
+        if($useQueryIds) {
+            $queryClone = clone $query;
+            $ids = $queryClone->ids();
+        }
 
         // Adjust conditions based on whether a key was provided
         if (null === $key) {
