@@ -318,7 +318,7 @@ class Query extends Component
         $elementIds = (new CraftQuery())
             ->select('[[elements.id]]')
             ->from('{{%elements}} elements')
-	          ->where(['[[elements.type]]' => $query->elementType])
+            ->where(['[[elements.type]]' => $query->elementType])
             ->leftJoin(['subquery' => $subquery], '[[elements.id]] = [[subquery.elementId]]')
             ->orderBy([new Expression($queryOrder)]);
 				
