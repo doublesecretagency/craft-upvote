@@ -460,11 +460,10 @@ class UpvoteVariable
      *
      * @param ElementQuery $elements
      * @param null|string $key
-     * @param bool $useQueryIds
      */
-    public function sort(ElementQuery $elements, ?string $key = null, ?bool $useQueryIds = true): void
+    public function sort(ElementQuery $elements, ?string $key = null): void
     {
-        Upvote::$plugin->upvote_query->orderByTally($elements, $key, $useQueryIds);
+        Upvote::$plugin->upvote_query->orderByTally($elements, $key);
     }
 
     /**
