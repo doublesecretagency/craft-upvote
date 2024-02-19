@@ -255,7 +255,7 @@ class Query extends Component
     public function orderByTally(ElementQuery $query, ?string $key = null): void
     {
         // Get and sort element IDs
-        $elementIds = $this->_elementIdsByTally($key);
+        $elementIds = $this->_elementIdsByTally($key, $query);
 
         // If no element IDs, bail
         if (!$elementIds) {
@@ -271,9 +271,11 @@ class Query extends Component
      * Get and sort element IDs.
      *
      * @param null|string $key
+     * @param ElementQuery $query
+     * @param bool $useQueryIds
      * @return array
      */
-    private function _elementIdsByTally(?string $key): array
+    private function _elementIdsByTally(?string $key, ElementQuery $query): array
     {
         // If key isn't valid, bail with empty array
         if (!Upvote::$plugin->upvote->validKey($key)) {
@@ -313,10 +315,11 @@ class Query extends Component
         $elementIds = (new CraftQuery())
             ->select('[[elements.id]]')
             ->from('{{%elements}} elements')
+            ->where(['[[elements.type]]' => $query->elementType])
             ->leftJoin(['subquery' => $subquery], '[[elements.id]] = [[subquery.elementId]]')
             ->orderBy([new Expression($queryOrder)])
             ->column();
-
+	
         // Return element IDs in order of highest voted
         return $elementIds;
     }
