@@ -272,7 +272,6 @@ class Query extends Component
      *
      * @param null|string $key
      * @param ElementQuery $query
-     * @param bool $useQueryIds
      * @return array
      */
     private function _elementIdsByTally(?string $key, ElementQuery $query): array
@@ -319,7 +318,7 @@ class Query extends Component
             ->leftJoin(['subquery' => $subquery], '[[elements.id]] = [[subquery.elementId]]')
             ->orderBy([new Expression($queryOrder)])
             ->column();
-	
+
         // Return element IDs in order of highest voted
         return $elementIds;
     }
