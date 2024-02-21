@@ -15,9 +15,8 @@ use Craft;
 use craft\base\Element;
 use craft\base\Model;
 use craft\base\Plugin;
+use craft\events\DefineAttributeHtmlEvent;
 use craft\events\RegisterElementTableAttributesEvent;
-use craft\events\SetElementTableAttributeHtmlEvent;
-use craft\services\Plugins;
 use craft\web\Application;
 use craft\web\twig\variables\CraftVariable;
 use doublesecretagency\upvote\models\Settings;
@@ -37,28 +36,28 @@ class Upvote extends Plugin
     /**
      * Actual vote values.
      */
-    const UPVOTE   =  1;
-    const DOWNVOTE = -1;
+    public const UPVOTE   =  1;
+    public const DOWNVOTE = -1;
 
     /**
      * @event VoteEvent The event that is triggered before a vote is cast.
      */
-    const EVENT_BEFORE_VOTE = 'beforeVote';
+    public const EVENT_BEFORE_VOTE = 'beforeVote';
 
     /**
      * @event VoteEvent The event that is triggered after a vote is cast.
      */
-    const EVENT_AFTER_VOTE = 'afterVote';
+    public const EVENT_AFTER_VOTE = 'afterVote';
 
     /**
      * @event UnvoteEvent The event that is triggered before a vote is removed.
      */
-    const EVENT_BEFORE_UNVOTE = 'beforeUnvote';
+    public const EVENT_BEFORE_UNVOTE = 'beforeUnvote';
 
     /**
      * @event UnvoteEvent The event that is triggered after a vote is removed.
      */
-    const EVENT_AFTER_UNVOTE = 'afterUnvote';
+    public const EVENT_AFTER_UNVOTE = 'afterUnvote';
 
     /**
      * @var Upvote Self-referential plugin property.
@@ -114,7 +113,7 @@ class Upvote extends Plugin
         Event::on(
             CraftVariable::class,
             CraftVariable::EVENT_INIT,
-            function (Event $event) {
+            static function (Event $event) {
                 $variable = $event->sender;
                 $variable->set('upvote', UpvoteVariable::class);
             }
@@ -124,7 +123,7 @@ class Upvote extends Plugin
         Event::on(
             Element::class,
             Element::EVENT_REGISTER_TABLE_ATTRIBUTES,
-            function (RegisterElementTableAttributesEvent $event) {
+            static function (RegisterElementTableAttributesEvent $event) {
                 $event->tableAttributes['upvote_voteTally']      = ['label' => Craft::t('upvote', 'Vote Tally')];
                 $event->tableAttributes['upvote_totalVotes']     = ['label' => Craft::t('upvote', 'Total Votes')];
                 $event->tableAttributes['upvote_totalUpvotes']   = ['label' => Craft::t('upvote', 'Total Upvotes')];
@@ -135,28 +134,29 @@ class Upvote extends Plugin
         // Register element index column HTML
         Event::on(
             Element::class,
-            Element::EVENT_SET_TABLE_ATTRIBUTE_HTML,
-            function(SetElementTableAttributeHtmlEvent $event) {
-            $element = $event->sender;
-            switch ($event->attribute) {
-                case 'upvote_voteTally':
-                    $event->html = Upvote::$plugin->upvote_query->tally($element->id);
-                    $event->handled = true;
-                    break;
-                case 'upvote_totalVotes':
-                    $event->html = Upvote::$plugin->upvote_query->totalVotes($element->id);
-                    $event->handled = true;
-                    break;
-                case 'upvote_totalUpvotes':
-                    $event->html = Upvote::$plugin->upvote_query->totalUpvotes($element->id);
-                    $event->handled = true;
-                    break;
-                case 'upvote_totalDownvotes':
-                    $event->html = Upvote::$plugin->upvote_query->totalDownvotes($element->id);
-                    $event->handled = true;
-                    break;
+            Element::EVENT_DEFINE_ATTRIBUTE_HTML,
+            static function (DefineAttributeHtmlEvent $event) {
+                $element = $event->sender;
+                switch ($event->attribute) {
+                    case 'upvote_voteTally':
+                        $event->html = Upvote::$plugin->upvote_query->tally($element->id);
+                        $event->handled = true;
+                        break;
+                    case 'upvote_totalVotes':
+                        $event->html = Upvote::$plugin->upvote_query->totalVotes($element->id);
+                        $event->handled = true;
+                        break;
+                    case 'upvote_totalUpvotes':
+                        $event->html = Upvote::$plugin->upvote_query->totalUpvotes($element->id);
+                        $event->handled = true;
+                        break;
+                    case 'upvote_totalDownvotes':
+                        $event->html = Upvote::$plugin->upvote_query->totalDownvotes($element->id);
+                        $event->handled = true;
+                        break;
+                }
             }
-        });
+        );
 
     }
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- Craft 5 compatibility.
+
 ## 2.3.3 - 2024-02-19
 
 ### Changed
