@@ -11,6 +11,10 @@ window.upvote = {
     csrfToken: false,
     // Whether setup has been completed
     setupComplete: false,
+    // Internal timer for debounce
+    debounceTimer: null,
+    // Length of debounce delay
+    debounceDelay: 300,
     // Initialize upvote elements on page
     pageSetup: function () {
         // Initialize
@@ -97,17 +101,23 @@ window.upvote = {
     },
     // Cast an upvote
     upvote: function (elementId, key) {
-        if (this.devMode) {
-            console.log('['+elementId+']'+(key ? ' ['+key+']' : '')+' Upvoting...');
-        }
-        this._vote(elementId, key, 'upvote');
+        var parent = this;
+        this._debounce(function(){
+            if (parent.devMode) {
+                console.log('['+elementId+']'+(key ? ' ['+key+']' : '')+' Upvoting...');
+            }
+            parent._vote(elementId, key, 'upvote');
+        });
     },
     // Cast a downvote
     downvote: function (elementId, key) {
-        if (this.devMode) {
-            console.log('['+elementId+']'+(key ? ' ['+key+']' : '')+' Downvoting...');
-        }
-        this._vote(elementId, key, 'downvote');
+        var parent = this;
+        this._debounce(function(){
+            if (parent.devMode) {
+                console.log('['+elementId+']'+(key ? ' ['+key+']' : '')+' Downvoting...');
+            }
+            parent._vote(elementId, key, 'downvote');
+        });
     },
     // Remove vote
     removeVote: function () {
@@ -136,6 +146,16 @@ window.upvote = {
                 callback();
             })
         ;
+    },
+    // Debounce voting
+    _debounce: function (func){
+        // Wipe timer
+        clearTimeout(this.debounceTimer);
+        // Reset timer
+        this.debounceTimer = setTimeout(
+            () => func(),
+            this.debounceDelay
+        );
     },
     // Cast vote
     _vote: function (elementId, key, vote) {
@@ -187,10 +207,11 @@ window.upvote = {
                         // Get entry data
                         var entry = JSON.parse(response.text);
                         // Set message prefix
-                        var prefix = '['+entry.id+']'+(entry.key ? ' ['+entry.key+']' : '');
+                        var prefix = (entry.id ? '['+entry.id+'] ' : '');
+                        prefix += (entry.key ? '['+entry.key+'] ' : '');
                         // If error was returned, log and bail
                         if (typeof entry === 'string') {
-                            console.log(prefix+' '+entry);
+                            console.log(prefix+entry);
                             return;
                         }
                         // If swapping vote
