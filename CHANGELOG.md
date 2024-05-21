@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- Added a configurable [debounce delay](https://plugins.doublesecretagency.com/upvote/debounce-delay/) when voting.
+
 ## 3.0.0 - 2024-02-21
 
 ### Changed

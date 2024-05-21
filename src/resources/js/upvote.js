@@ -14,7 +14,7 @@ window.upvote = {
     // Internal timer for debounce
     debounceTimer: null,
     // Length of debounce delay
-    debounceDelay: 300,
+    debounceDelay: 200,
     // Initialize upvote elements on page
     pageSetup: function () {
         // Initialize

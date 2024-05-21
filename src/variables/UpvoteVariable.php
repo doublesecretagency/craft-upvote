@@ -436,6 +436,14 @@ class UpvoteVariable
             $view->registerJs('upvote.devMode = true;', $view::POS_END);
         }
 
+        // Get debounce delay
+        $debounceDelay = Upvote::$plugin->getSettings()->debounceDelay;
+
+        // Debounce
+        if (is_int($debounceDelay)) {
+            $view->registerJs("upvote.debounceDelay = {$debounceDelay};", $view::POS_END);
+        }
+
         // Action trigger
         $view->registerJs('upvote.actionUrl = "'.UrlHelper::actionUrl().'";', $view::POS_END);
 

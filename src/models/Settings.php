@@ -50,4 +50,9 @@ class Settings extends Model
      */
     public bool $keepVoteLog = false;
 
+    /**
+     * @var int Length of the debounce delay when votes are cast.
+     */
+    public int $debounceDelay = 200;
+
 }

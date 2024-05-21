@@ -28,14 +28,14 @@ module.exports = {
         logo: '/images/icon.svg',
         searchMaxSuggestions: 10,
         nav: [
-            {text: 'Getting Started️', link: '/getting-started/'},
+            {text: 'Getting Started', link: '/getting-started/'},
             {
                 text: 'How It Works',
                 items: [
-                    {text: 'Using "Favorites"', link: '/favorites/'},
                     {text: 'Display voting arrows', link: '/display-voting-arrows/'},
                     {text: 'Customize your icons', link: '/customize-your-icons/'},
                     {text: 'Customize your CSS', link: '/customize-your-css/'},
+                    {text: 'Using "Favorites"', link: '/favorites/'},
                     {text: 'Sort by highest voted', link: '/sort-by-highest-voted/'},
                     {text: 'Multiple voting for the same element', link: '/multiple-voting-for-the-same-element/'},
                     {text: 'User Vote History', link: '/user-vote-history/'},
@@ -45,9 +45,9 @@ module.exports = {
                     {text: 'Getting Vote Totals', link: '/getting-vote-totals/'},
                     {text: 'Control the output format', link: '/control-the-output-format/'},
                     {text: 'Cast a vote on behalf of a specific user', link: '/cast-a-vote-on-behalf-of-a-specific-user/'},
+                    {text: 'Debounce Delay', link: '/debounce-delay/'},
                     {text: 'Events', link: '/events/'},
                     {text: 'Caching', link: '/caching/'},
-                    {text: 'BREAKING CHANGE (v2.0.0)', link: '/breaking-change-v2-0-0/'},
                 ]
             },
             {
@@ -61,10 +61,10 @@ module.exports = {
         sidebar: {
             '/': [
                 'getting-started',
-                'favorites',
                 'display-voting-arrows',
                 'customize-your-icons',
                 'customize-your-css',
+                'favorites',
                 'sort-by-highest-voted',
                 'multiple-voting-for-the-same-element',
                 'user-vote-history',
@@ -74,9 +74,9 @@ module.exports = {
                 'getting-vote-totals',
                 'control-the-output-format',
                 'cast-a-vote-on-behalf-of-a-specific-user',
+                'debounce-delay',
                 'events',
                 'caching',
-                'breaking-change-v2-0-0',
             ],
         }
     }
