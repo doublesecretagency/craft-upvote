@@ -21,6 +21,9 @@
         background: rgba(0,72.85714285714286,127.5,.054901960784314);
         border-radius: 3px;
     }
+    #settings-debounceDelay {
+        max-width:80px;
+    }
 {% endcss %}
 
 <h2>Voting Settings</h2>
@@ -64,6 +67,21 @@
 }) }}
 {{ 'allowFontAwesome' in overrideKeys ? configWarning('allowFontAwesome') }}
 <p>The default up &amp; down icons are generated using <a href="https://fontawesome.com/" target="_blank">Font Awesome</a>. It's loaded automatically by the plugin, but can be disabled if necessary.</p>
+
+<hr/>
+
+<h2>Debounce</h2>
+
+{{ forms.textField({
+    label: raw("<strong>Length of Debounce Delay</strong>"|t),
+    instructions: "To prevent accidental duplicate votes, a debounce mechanism reduces rapid-fire clicking down to a single click.",
+    id: 'debounceDelay',
+    name: 'debounceDelay',
+    type: 'number',
+    value: settings.debounceDelay,
+    unit: 'millisecond delay',
+}) }}
+{{ 'debounceDelay' in overrideKeys ? configWarning('debounceDelay') }}
 
 <hr/>
 
