@@ -25,3 +25,20 @@ Votes can be assigned to any valid element type, whether it's native or 3rd part
 :::warning Must be an Element Query
 Don't apply the `.all()` method until _after_ you have sorted the Element Query.
 :::
+
+## Pagination
+
+When [paginating](https://craftcms.com/docs/5.x/reference/twig/tags.html#paginate) the results, be sure to pass a **query** into the `paginate` tag:
+
+```twig
+{# Create a query #}
+{% set query = craft.entries()
+    .section('hotels')
+    .limit(10) %}
+
+{# Order query by highest voted #}
+{% do craft.upvote.sort(query) %}
+
+{# Paginate results #}
+{% paginate query as pageInfo, pageEntries %}
+```
