@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- The `VoteHistory` cookie is now only set once a user has voted. ([#43](https://github.com/doublesecretagency/craft-upvote/issues/43))
+
 ## 3.1.0 - 2024-05-23
 
 ### Added

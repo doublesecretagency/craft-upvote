@@ -116,9 +116,9 @@ class UpvoteService extends Component
             $cookieValue = $cookies->getValue($this->userCookie);
             $this->anonymousHistory = Json::decode($cookieValue);
         } else {
-            // Initialize history and set cookie
+            // Initialize history
             $this->anonymousHistory = [];
-            Upvote::$plugin->upvote_vote->saveUserHistoryCookie();
+            // Don't yet create the cookie, it will be set when a vote is cast
         }
 
     }
