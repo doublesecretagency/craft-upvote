@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added a PHPUnit test suite.
+
 ### Fixed
 - The `VoteHistory` cookie is now only set once a user has voted. ([#43](https://github.com/doublesecretagency/craft-upvote/issues/43))
 - Anonymous users can no longer vote on the same element more than once.

@@ -27,10 +27,21 @@
         "craftcms/cms": "^5.0.0-beta",
         "fortawesome/font-awesome": "4.7.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0"
+    },
     "autoload": {
         "psr-4": {
-          "doublesecretagency\\upvote\\": "src/"
+            "doublesecretagency\\upvote\\": "src/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "doublesecretagency\\upvote\\tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
     },
     "extra": {
         "name": "Upvote",
