@@ -4,6 +4,7 @@
 
 ### Fixed
 - The `VoteHistory` cookie is now only set once a user has voted. ([#43](https://github.com/doublesecretagency/craft-upvote/issues/43))
+- Anonymous users can no longer vote on the same element more than once.
 
 ## 3.1.0 - 2024-05-23
 

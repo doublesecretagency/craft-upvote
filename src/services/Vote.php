@@ -112,9 +112,6 @@ class Vote extends Component
         // DEPRECATED: REMOVE IN NEXT MAJOR VERSION
         $returnData['vote'] = $vote;
 
-        // Update original history
-        $upvote->history[$itemKey] = $vote;
-
         // Trigger event before a vote is cast
         if (Event::hasHandlers(Upvote::class, Upvote::EVENT_BEFORE_VOTE)) {
             Event::trigger(Upvote::class, Upvote::EVENT_BEFORE_VOTE, new VoteEvent($returnData));
@@ -132,6 +129,9 @@ class Vote extends Component
                 return $this->alreadyVoted;
             }
         }
+
+        // Update original history after the vote has been cast
+        $upvote->history[$itemKey] = $vote;
 
         // Update element tally
         $this->_updateElementTotals($elementId, $key, $vote);
@@ -267,13 +267,18 @@ class Vote extends Component
         // Compile the item key
         $item = $upvote->setItemKey($elementId, $key);
 
+        // If user has already voted on element, bail
+        if (isset($upvote->anonymousHistory[$item])) {
+            return false;
+        }
+
         // Cast the anonymous vote
         $upvote->anonymousHistory[$item] = $vote;
 
         // Save the cookie
         $this->saveUserHistoryCookie();
 
-        // Always return true
+        // Return successfully
         return true;
     }
 
